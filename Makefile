@@ -6,13 +6,11 @@ help:
 	@echo "  dev        install all deps for dev environment"
 	@echo "  clean      remove all old packages"
 	@echo "  test       run tests"
-	@echo "  deploy     Configure the PyPi config file in CI"
-	@echo "  packagejs  Build the React Project"
-	@echo "  devjs  Build the PyPi package"
+	@echo "  deploy     Push to PyPi"
+	@echo "  package    Build the PyPi Package"
 
 clean:
 	rm -rf dist/*
-	rm -rf frontend/build/*
 
 dev:
 	pip install --upgrade pip
@@ -25,16 +23,7 @@ test:
 
 deploy:
 	pip install twine
-	echo "[pypi]" > ~/.pypirc
-	echo "username=__token__" >> ~/.pypirc
-	echo "password=${pypi-api-token}" >> ~/.pypirc
-	cut -c-20 ~/.pypirc
+	twine upload dist/*
 
 package:
 	python setup.py sdist
-
-devjs:
-	cd frontend;yarn install;yarn start
-
-buildjs:
-	cd frontend;yarn install;yarn build

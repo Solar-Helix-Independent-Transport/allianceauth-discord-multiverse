@@ -16,12 +16,6 @@ jobs:
         with:
           python-version: "3.9"
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "16"
-
-      - run: npm install -g yarn
-
       - name: install dependencies
         run: make dev
 
