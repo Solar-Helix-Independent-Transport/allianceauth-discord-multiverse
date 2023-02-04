@@ -1,0 +1,35 @@
+{% load i18n %}
+<tr>
+    <td class="text-center">{% translate "Discord" %}</td>
+    <td class="text-center">
+        {% if not user_has_account %}
+            (not activated)
+        {% else %}
+            {{discord_username}}
+        {% endif %}
+    </td>
+    <td class="text-center">
+        {{server_name}}
+    </td>
+    <td class="text-center">
+        {% if not user_has_account %}
+            <a href="{% url 'dmv:activate' guild_id %}" title="{% translate 'Join the Discord server' %}" class="btn btn-primary">
+                <span class="fas fa-check"></span>
+            </a>
+        {% else %}
+            <a href="{% url 'dmv:reset' guild_id %}" title="{% translate 'Leave and rejoin the Discord Server (Reset)' %}" class="btn btn-warning">
+                <span class="fas fa-sync"></span>
+            </a>
+            <a href="{% url 'dmv:deactivate' guild_id %}" title="{% translate 'Leave the Discord server' %}" class="btn btn-danger">
+                <span class="fas fa-times"></span>
+            </a>
+        {% endif %}
+        {% if request.user.is_superuser %}
+            <div class="text-center" style="padding-top:5px;">
+                <a type="button" id="btnLinkDiscordServer" class="btn btn-primary" href="{% url 'dmv:add_bot' %}">
+                    {% translate "Link Discord Server" %}
+                </a>
+            </div>
+        {% endif %}
+    </td>
+</tr>
