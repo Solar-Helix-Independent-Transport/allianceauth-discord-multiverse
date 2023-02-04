@@ -4,7 +4,7 @@ from .. import DiscordRoles
 from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_CHARLIE_2,
                ROLE_MIKE, create_role)
 
-MODULE_PATH = 'allianceauth.services.modules.discord.discord_client.client'
+MODULE_PATH = 'aadiscordmultiverse.discord_client.client'
 
 
 class TestDiscordRoles(TestCase):

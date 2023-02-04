@@ -1,10 +1,10 @@
 [run]
 branch = True
 source =
-    aa-discord-mulitverse
+    aadiscordmultiverse
 
 omit =
-    */aa-discord-mulitverse/migrations/*
+    */aadiscordmulitverse/migrations/*
     */tests/*
     */.tox/*
     */bin/*

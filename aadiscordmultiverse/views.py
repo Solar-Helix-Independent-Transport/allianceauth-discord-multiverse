@@ -8,11 +8,9 @@ from django.contrib.auth.decorators import (login_required,
 from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
 
-from . import __title__
 from .models import DiscordManagedServer, MultiDiscordUser
-from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 ACCESS_PERM = 'aadiscordmultiverse.access_discord_multiverse'
 

@@ -10,13 +10,11 @@ from django.db import models
 from django.utils.translation import gettext_lazy
 from requests.exceptions import HTTPError
 
-from . import __title__
 from .discord_client import DiscordApiBackoff, DiscordClient, DiscordRoles
 from .discord_client.helpers import match_or_create_roles_from_names
 from .managers import DiscordManagedServerManager, MultiDiscordUserManager
-from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 
 class DiscordManagedServer(models.Model):

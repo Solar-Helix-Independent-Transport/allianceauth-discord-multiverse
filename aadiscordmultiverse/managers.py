@@ -11,16 +11,14 @@ from django.utils.timezone import now
 from requests.exceptions import HTTPError
 from requests_oauthlib import OAuth2Session
 
-from . import __title__
 from .app_settings import (DISCORD_APP_ID, DISCORD_APP_SECRET,
                            DISCORD_BOT_TOKEN, DISCORD_CALLBACK_URL)
 from .discord_client import DiscordClient
 from .discord_client.exceptions import (DiscordApiBackoff,
                                         DiscordClientException)
 from .discord_client.helpers import match_or_create_roles_from_names
-from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 
 class DiscordManagedServerQuerySet(models.QuerySet):

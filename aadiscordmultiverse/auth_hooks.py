@@ -8,12 +8,12 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from pytz import AmbiguousTimeError
 
-from . import __title__, tasks, urls
+from . import tasks, urls
 from .models import DiscordManagedServer, MultiDiscordUser
 from .urls import urlpatterns
 from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 # Default priority for single tasks like update group and sync nickname
 SINGLE_TASK_PRIORITY = 3

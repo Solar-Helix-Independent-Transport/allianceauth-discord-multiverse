@@ -18,10 +18,10 @@ from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, TEST_BOT_TOKEN,
                create_matched_role, create_role, create_user_info)
 
 logger = set_logger_to_file(
-    'allianceauth.services.modules.discord.discord_client.client', __file__
+    'aadiscordmultiverse.discord_client.client', __file__
 )
 
-MODULE_PATH = 'allianceauth.services.modules.discord.discord_client.client'
+MODULE_PATH = 'aadiscordmultiverse.discord_client.client'
 API_BASE_URL = 'https://discord.com/api/'
 
 TEST_RETRY_AFTER = 3000

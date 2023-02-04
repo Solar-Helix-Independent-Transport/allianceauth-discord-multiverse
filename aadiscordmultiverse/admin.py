@@ -3,11 +3,9 @@ import logging
 from allianceauth.services.admin import ServicesUserAdmin
 from django.contrib import admin
 
-from . import __title__
 from .models import DiscordManagedServer, MultiDiscordUser
-from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 
 @admin.register(MultiDiscordUser)

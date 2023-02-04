@@ -7,13 +7,12 @@ from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from requests.exceptions import HTTPError
 
-from . import __title__
 from .app_settings import DISCORD_TASKS_MAX_RETRIES, DISCORD_TASKS_RETRY_PAUSE
 from .discord_client import DiscordApiBackoff
 from .models import MultiDiscordUser
 from .utils import LoggerAddTag
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 # task priority of bulk tasks
 BULK_TASK_PRIORITY = 6

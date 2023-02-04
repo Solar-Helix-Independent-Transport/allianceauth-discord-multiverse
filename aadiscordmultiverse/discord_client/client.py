@@ -11,8 +11,6 @@ from allianceauth import __url__, __version__
 from django_redis import get_redis_connection
 from redis import Redis
 
-from .. import __title__
-from ..utils import LoggerAddTag
 from .app_settings import (DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
                            DISCORD_API_TIMEOUT_READ,
                            DISCORD_DISABLE_ROLE_CREATION,
@@ -22,7 +20,7 @@ from .app_settings import (DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
 from .exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
 from .helpers import DiscordRoles
 
-logger = LoggerAddTag(logging.getLogger(__name__), __title__)
+logger = logging.getLogger(__name__)
 
 # max requests that can be executed until reset
 RATE_LIMIT_MAX_REQUESTS = 5
