@@ -1,6 +1,8 @@
-from aadiscordmulitverse import __version__
 import os
+
+from aadiscordmulitverse import __version__
 from setuptools import find_packages, setup
+
 install_requires = [
     'allianceauth>=3.0.0',
 ]

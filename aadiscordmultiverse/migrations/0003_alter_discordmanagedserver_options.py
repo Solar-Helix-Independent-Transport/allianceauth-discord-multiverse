@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='discordmanagedserver',
-            options={'permissions': (('access_discord_multiverse', 'Can access the Discord Multiverse services'), ('access_all_discords', 'Can access the All the Discord Multiverse servers'))},
+            options={'permissions': (('access_discord_multiverse', 'Can access the Discord Multiverse services'), (
+                'access_all_discords', 'Can access the All the Discord Multiverse servers'))},
         ),
     ]

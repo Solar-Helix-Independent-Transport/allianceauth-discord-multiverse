@@ -14,13 +14,13 @@ Since this may cause lots of 429s we'd recommend NOT to use your
 alliance Discord server for this.
 """
 
-from uuid import uuid1
 import os
-from unittest import TestCase
 from time import sleep
+from unittest import TestCase
+from uuid import uuid1
 
-from .. import DiscordClient
 from ...utils import set_logger_to_file
+from .. import DiscordClient
 
 logger = set_logger_to_file(
     'allianceauth.services.modules.discord.discord_self.client.client', __file__
@@ -50,7 +50,8 @@ class TestDiscordApiLive(TestCase):
         self.client.guild_name(DISCORD_GUILD_ID)
         sleep(RATE_LIMIT_DELAY_SECS)
 
-        self.client.match_or_create_role_from_name(DISCORD_GUILD_ID, 'Testrole')
+        self.client.match_or_create_role_from_name(
+            DISCORD_GUILD_ID, 'Testrole')
         sleep(RATE_LIMIT_DELAY_SECS)
 
         self.client.match_or_create_roles_from_names(
@@ -61,7 +62,8 @@ class TestDiscordApiLive(TestCase):
     def test_create_and_remove_roles(self):
         # get base
         logger.info('guild_roles')
-        expected = {role['id'] for role in self.client.guild_roles(DISCORD_GUILD_ID)}
+        expected = {role['id']
+                    for role in self.client.guild_roles(DISCORD_GUILD_ID)}
 
         # add role
         role_name = 'my test role 12345678'
@@ -81,7 +83,8 @@ class TestDiscordApiLive(TestCase):
 
         # verify it worked
         logger.info('guild_roles')
-        role_ids = {role['id'] for role in self.client.guild_roles(DISCORD_GUILD_ID)}
+        role_ids = {role['id']
+                    for role in self.client.guild_roles(DISCORD_GUILD_ID)}
         sleep(RATE_LIMIT_DELAY_SECS)
         self.assertSetEqual(role_ids, expected)
 

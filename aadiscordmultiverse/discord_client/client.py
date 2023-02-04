@@ -1,32 +1,26 @@
-from hashlib import md5
 import json
 import logging
+from hashlib import md5
 from time import sleep
 from urllib.parse import urljoin
 from uuid import uuid1
 
-from redis import Redis
 import requests
-
+from allianceauth import __title__ as AUTH_TITLE
+from allianceauth import __url__, __version__
 from django_redis import get_redis_connection
-
-from allianceauth import __title__ as AUTH_TITLE, __url__, __version__
+from redis import Redis
 
 from .. import __title__
-from .app_settings import (
-    DISCORD_API_BASE_URL,
-    DISCORD_API_TIMEOUT_CONNECT,
-    DISCORD_API_TIMEOUT_READ,
-    DISCORD_DISABLE_ROLE_CREATION,
-    DISCORD_GUILD_NAME_CACHE_MAX_AGE,
-    DISCORD_OAUTH_BASE_URL,
-    DISCORD_OAUTH_TOKEN_URL,
-    DISCORD_ROLES_CACHE_MAX_AGE,
-)
+from ..utils import LoggerAddTag
+from .app_settings import (DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
+                           DISCORD_API_TIMEOUT_READ,
+                           DISCORD_DISABLE_ROLE_CREATION,
+                           DISCORD_GUILD_NAME_CACHE_MAX_AGE,
+                           DISCORD_OAUTH_BASE_URL, DISCORD_OAUTH_TOKEN_URL,
+                           DISCORD_ROLES_CACHE_MAX_AGE)
 from .exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
 from .helpers import DiscordRoles
-from ..utils import LoggerAddTag
-
 
 logger = LoggerAddTag(logging.getLogger(__name__), __title__)
 
@@ -224,7 +218,8 @@ class DiscordClient:
         if use_cache:
             roles_raw = self._redis.get(name=cache_key)
             if roles_raw:
-                logger.debug('Returning roles for guild %s from cache', guild_id)
+                logger.debug(
+                    'Returning roles for guild %s from cache', guild_id)
                 return json.loads(self._redis_decode(roles_raw))
             else:
                 logger.debug('No roles for guild %s in cache', guild_id)
@@ -390,9 +385,11 @@ class DiscordClient:
         or None if the user is not a member of the guild
         """
         route = f'guilds/{guild_id}/members/{user_id}'
-        r = self._api_request(method='get', route=route, raise_for_status=False)
+        r = self._api_request(method='get', route=route,
+                              raise_for_status=False)
         if self._is_member_unknown_error(r):
-            logger.warning("Discord user ID %s could not be found on server.", user_id)
+            logger.warning(
+                "Discord user ID %s could not be found on server.", user_id)
             return None
         else:
             r.raise_for_status()
@@ -472,7 +469,8 @@ class DiscordClient:
         - False otherwise
         """
         route = f"guilds/{guild_id}/members/{user_id}/roles/{role_id}"
-        r = self._api_request(method='put', route=route, raise_for_status=False)
+        r = self._api_request(method='put', route=route,
+                              raise_for_status=False)
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
             return None
@@ -495,7 +493,8 @@ class DiscordClient:
         - False otherwise
         """
         route = f"guilds/{guild_id}/members/{user_id}/roles/{role_id}"
-        r = self._api_request(method='delete', route=route, raise_for_status=False)
+        r = self._api_request(method='delete', route=route,
+                              raise_for_status=False)
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
             return None
@@ -559,7 +558,8 @@ class DiscordClient:
         if data:
             args['json'] = data
 
-        logger.info('%s: sending %s request to url \'%s\'', uid, method.upper(), url)
+        logger.info('%s: sending %s request to url \'%s\'',
+                    uid, method.upper(), url)
         logger.debug('%s: request headers: %s', uid, headers)
         r = getattr(requests, method)(**args)
         logger.debug(
@@ -592,7 +592,8 @@ class DiscordClient:
         if on backoff: will do a blocking wait if it expires soon,
         else raises exception
         """
-        global_backoff_duration = self._redis.pttl(self._KEY_GLOBAL_BACKOFF_UNTIL)
+        global_backoff_duration = self._redis.pttl(
+            self._KEY_GLOBAL_BACKOFF_UNTIL)
         if global_backoff_duration > 0:
             if global_backoff_duration < WAIT_THRESHOLD:
                 logger.info(
@@ -607,7 +608,8 @@ class DiscordClient:
                     uid,
                     global_backoff_duration
                 )
-                raise DiscordTooManyRequestsError(retry_after=global_backoff_duration)
+                raise DiscordTooManyRequestsError(
+                    retry_after=global_backoff_duration)
 
     def _ensure_rate_limed_not_exhausted(self, uid: str) -> int:
         """ensures that the rate limit is not exhausted
@@ -654,7 +656,8 @@ class DiscordClient:
                 )
                 raise DiscordRateLimitExhausted(resets_in)
 
-        raise RuntimeError('Failed to handle rate limit after after too tries.')
+        raise RuntimeError(
+            'Failed to handle rate limit after after too tries.')
 
     def _handle_new_api_backoff(self, r: requests.Response, uid: str) -> None:
         """raises exception for new API backoff error"""
@@ -690,7 +693,8 @@ class DiscordClient:
             try:
                 limit = int(r.headers['x-ratelimit-limit'])
                 remaining = int(r.headers['x-ratelimit-remaining'])
-                reset_after = float(r.headers['x-ratelimit-reset-after']) * 1000
+                reset_after = float(
+                    r.headers['x-ratelimit-reset-after']) * 1000
                 if remaining + 1 == limit:
                     logger.debug(
                         '%s: Rate limit reported from API: %d requests per %s ms',

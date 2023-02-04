@@ -1,22 +1,17 @@
 import logging
 from typing import Any
 
-from celery import shared_task, chain
-from requests.exceptions import HTTPError
-
+from allianceauth.services.tasks import QueueOnce
+from celery import chain, shared_task
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
-
-from allianceauth.services.tasks import QueueOnce
+from requests.exceptions import HTTPError
 
 from . import __title__
-from .app_settings import (
-    DISCORD_TASKS_MAX_RETRIES, DISCORD_TASKS_RETRY_PAUSE
-)
+from .app_settings import DISCORD_TASKS_MAX_RETRIES, DISCORD_TASKS_RETRY_PAUSE
 from .discord_client import DiscordApiBackoff
 from .models import MultiDiscordUser
 from .utils import LoggerAddTag
-
 
 logger = LoggerAddTag(logging.getLogger(__name__), __title__)
 
@@ -34,7 +29,8 @@ def update_groups(self, guild_id: int, user_pk: int, state_name: str = None) -> 
     - user_pk: PK of given user
     - state_name: optional state name to be used
     """
-    _task_perform_user_action(self, guild_id, user_pk, 'update_groups', state_name=state_name)
+    _task_perform_user_action(self, guild_id, user_pk,
+                              'update_groups', state_name=state_name)
 
 
 @shared_task(
@@ -47,7 +43,8 @@ def update_nickname(self, guild_id: int, user_pk: int, nickname: str = None) -> 
     - user_pk: PK of given user
     - nickname: optional nickname to be used instead of user's main
     """
-    _task_perform_user_action(self, guild_id, user_pk, 'update_nickname', nickname=nickname)
+    _task_perform_user_action(self, guild_id, user_pk,
+                              'update_nickname', nickname=nickname)
 
 
 @shared_task(
@@ -71,7 +68,8 @@ def delete_user(self, guild_id: int, user_pk: int, notify_user: bool = False) ->
     Params:
     - user_pk: PK of given user
     """
-    _task_perform_user_action(self, guild_id, user_pk, 'delete_user', notify_user=notify_user)
+    _task_perform_user_action(self, guild_id, user_pk,
+                              'delete_user', notify_user=notify_user)
 
 
 def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **kwargs) -> None:
@@ -81,7 +79,8 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
     # logger.debug("user %s has state %s", user, user.profile.state)
 
     if MultiDiscordUser.objects.user_has_account(user, guild_id):
-        discord_user = MultiDiscordUser.objects.get(user=user, guild_id=guild_id)
+        discord_user = MultiDiscordUser.objects.get(
+            user=user, guild_id=guild_id)
         logger.info("Running %s for user %s", method, user)
         try:
             success = getattr(discord_user, method)(**kwargs)
@@ -198,7 +197,8 @@ def _task_perform_users_action(self, method: str, **kwargs) -> Any:
         result = getattr(MultiDiscordUser.objects, method)(**kwargs)
 
     except AttributeError:
-        raise ValueError(f'{method} not a valid method for DiscordUser.objects')
+        raise ValueError(
+            f'{method} not a valid method for DiscordUser.objects')
 
     except DiscordApiBackoff as bo:
         logger.info(
@@ -222,7 +222,8 @@ def _task_perform_users_action(self, method: str, **kwargs) -> Any:
             logger.error('%s failed after max retries', method, exc_info=True)
 
     except Exception:
-        logger.error('%s failed due to unexpected exception', method, exc_info=True)
+        logger.error('%s failed due to unexpected exception',
+                     method, exc_info=True)
 
     return result
 

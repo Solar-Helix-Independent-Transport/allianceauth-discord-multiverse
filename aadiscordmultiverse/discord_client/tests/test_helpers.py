@@ -1,16 +1,8 @@
 from unittest import TestCase
 
-from . import (
-    ROLE_ALPHA,
-    ROLE_BRAVO,
-    ROLE_CHARLIE,
-    ROLE_CHARLIE_2,
-    ROLE_MIKE,
-    ALL_ROLES,
-    create_role
-)
 from .. import DiscordRoles
-
+from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_CHARLIE_2,
+               ROLE_MIKE, create_role)
 
 MODULE_PATH = 'allianceauth.services.modules.discord.discord_client.client'
 
@@ -214,7 +206,8 @@ class TestUnion(TestCase):
         roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
         roles_2 = DiscordRoles([ROLE_CHARLIE, ROLE_MIKE])
         roles_3 = roles_1.union(roles_2)
-        expected = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_MIKE])
+        expected = DiscordRoles(
+            [ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_MIKE])
         self.assertEqual(roles_3, expected)
 
     def test_overlapping_sets(self):

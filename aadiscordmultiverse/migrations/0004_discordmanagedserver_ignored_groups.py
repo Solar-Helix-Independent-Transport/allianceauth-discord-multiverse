@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discordmanagedserver',
             name='ignored_groups',
-            field=models.ManyToManyField(blank=True, help_text='Groups that will not be synced to this discord server.', related_name='dmv_ignored_groups', to='auth.group'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Groups that will not be synced to this discord server.', related_name='dmv_ignored_groups', to='auth.group'),
         ),
     ]

@@ -16,31 +16,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discordmanagedserver',
             name='alliance_access',
-            field=models.ManyToManyField(blank=True, help_text='Alliances to whose members this server is available.', to='eveonline.eveallianceinfo'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Alliances to whose members this server is available.', to='eveonline.eveallianceinfo'),
         ),
         migrations.AddField(
             model_name='discordmanagedserver',
             name='character_access',
-            field=models.ManyToManyField(blank=True, help_text='Characters to which this server is available.', to='eveonline.evecharacter'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Characters to which this server is available.', to='eveonline.evecharacter'),
         ),
         migrations.AddField(
             model_name='discordmanagedserver',
             name='corporation_access',
-            field=models.ManyToManyField(blank=True, help_text='Corporations to whose members this server is available.', to='eveonline.evecorporationinfo'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Corporations to whose members this server is available.', to='eveonline.evecorporationinfo'),
         ),
         migrations.AddField(
             model_name='discordmanagedserver',
             name='faction_access',
-            field=models.ManyToManyField(blank=True, help_text='Factions to whose members this server is available.', to='eveonline.evefactioninfo'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Factions to whose members this server is available.', to='eveonline.evefactioninfo'),
         ),
         migrations.AddField(
             model_name='discordmanagedserver',
             name='group_access',
-            field=models.ManyToManyField(blank=True, help_text='Groups to whose members this server is available.', to='auth.group'),
+            field=models.ManyToManyField(
+                blank=True, help_text='Groups to whose members this server is available.', to='auth.group'),
         ),
         migrations.AddField(
             model_name='discordmanagedserver',
             name='state_access',
-            field=models.ManyToManyField(blank=True, help_text='States to whose members this server is available.', to='authentication.state'),
+            field=models.ManyToManyField(
+                blank=True, help_text='States to whose members this server is available.', to='authentication.state'),
         ),
     ]

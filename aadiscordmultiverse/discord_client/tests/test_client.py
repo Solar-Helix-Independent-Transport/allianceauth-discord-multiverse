@@ -1,32 +1,21 @@
 import json
-from unittest.mock import patch, MagicMock
 from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
-from redis import Redis
 import requests
 import requests_mock
+from allianceauth import __title__ as AUTH_TITLE
+from allianceauth import __url__, __version__
+from redis import Redis
 from requests.exceptions import HTTPError
 
-from allianceauth import __title__ as AUTH_TITLE, __url__, __version__
-
-from . import (
-    TEST_GUILD_ID,
-    TEST_USER_ID,
-    TEST_USER_NAME,
-    TEST_BOT_TOKEN,
-    TEST_ROLE_ID,
-    ROLE_ALPHA,
-    ROLE_BRAVO,
-    ALL_ROLES,
-    create_role,
-    create_matched_role,
-    create_user_info
-)
-from ..client import (
-    DiscordClient, DURATION_CONTINGENCY, DEFAULT_BACKOFF_DELAY, DiscordRoles
-)
-from ..exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
 from ...utils import set_logger_to_file
+from ..client import (DEFAULT_BACKOFF_DELAY, DURATION_CONTINGENCY,
+                      DiscordClient, DiscordRoles)
+from ..exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
+from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, TEST_BOT_TOKEN,
+               TEST_GUILD_ID, TEST_ROLE_ID, TEST_USER_ID, TEST_USER_NAME,
+               create_matched_role, create_role, create_user_info)
 
 logger = set_logger_to_file(
     'allianceauth.services.modules.discord.discord_client.client', __file__
@@ -79,10 +68,12 @@ class TestBasicsAndHelpers(TestCase):
         self.assertEqual(repr(client), expected)
 
     def test_can_set_rate_limiting(self):
-        client = DiscordClient(TEST_BOT_TOKEN, mock_redis, is_rate_limited=False)
+        client = DiscordClient(
+            TEST_BOT_TOKEN, mock_redis, is_rate_limited=False)
         self.assertFalse(client.is_rate_limited)
 
-        client = DiscordClient(TEST_BOT_TOKEN, mock_redis, is_rate_limited=True)
+        client = DiscordClient(
+            TEST_BOT_TOKEN, mock_redis, is_rate_limited=True)
         self.assertTrue(client.is_rate_limited)
 
     @patch(MODULE_PATH + '.get_redis_connection')
@@ -271,7 +262,8 @@ class TestGuildGetName(TestCase):
     @patch(MODULE_PATH + '.DiscordClient.guild_infos')
     def test_returns_from_cache_if_found(self, mock_guild_get_infos):
         guild_name = 'Omega'
-        my_mock_redis = MagicMock(**{'get.return_value': guild_name.encode('utf8')})
+        my_mock_redis = MagicMock(
+            **{'get.return_value': guild_name.encode('utf8')})
         mock_guild_get_infos.side_effect = RuntimeError
         client = DiscordClient2(TEST_BOT_TOKEN, my_mock_redis)
         result = client.guild_name(TEST_GUILD_ID)
@@ -285,7 +277,8 @@ class TestGuildGetName(TestCase):
     ):
         guild_name = 'Omega'
         my_mock_redis = MagicMock(**{'get.return_value': False})
-        mock_guild_get_infos.return_value = {'id': TEST_GUILD_ID, 'name': guild_name}
+        mock_guild_get_infos.return_value = {
+            'id': TEST_GUILD_ID, 'name': guild_name}
         client = DiscordClient2(TEST_BOT_TOKEN, my_mock_redis)
         result = client.guild_name(TEST_GUILD_ID)
         self.assertEqual(result, guild_name)
@@ -298,7 +291,8 @@ class TestGuildGetName(TestCase):
     ):
         guild_name = 'Omega'
         my_mock_redis = MagicMock(**{'get.return_value': False})
-        mock_guild_get_infos.return_value = {'id': TEST_GUILD_ID, 'name': guild_name}
+        mock_guild_get_infos.return_value = {
+            'id': TEST_GUILD_ID, 'name': guild_name}
         client = DiscordClient2(TEST_BOT_TOKEN, my_mock_redis)
         result = client.guild_name(TEST_GUILD_ID, use_cache=False)
         self.assertFalse(my_mock_redis.get.called)
@@ -903,7 +897,8 @@ class TestMatchOrCreateGuildRolesToName(TestCase):
         role_name = 'alpha'
         mock_guild_get_roles.return_value = ALL_ROLES
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_role_from_name(TEST_GUILD_ID, role_name)
+        result = client.match_or_create_role_from_name(
+            TEST_GUILD_ID, role_name)
         expected = (ROLE_ALPHA, False)
         self.assertEqual(result, expected)
         self.assertFalse(mock_guild_create_role.called)
@@ -916,7 +911,8 @@ class TestMatchOrCreateGuildRolesToName(TestCase):
         mock_guild_get_roles.return_value = ALL_ROLES
         mock_guild_create_role.return_value = new_role
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_role_from_name(TEST_GUILD_ID, role_name)
+        result = client.match_or_create_role_from_name(
+            TEST_GUILD_ID, role_name)
         expected = (new_role, True)
         self.assertEqual(result, expected)
         self.assertTrue(mock_guild_create_role.called)
@@ -928,7 +924,8 @@ class TestMatchOrCreateGuildRolesToName(TestCase):
         role_name = 'echo'
         mock_guild_get_roles.return_value = ALL_ROLES
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_role_from_name(TEST_GUILD_ID, role_name)
+        result = client.match_or_create_role_from_name(
+            TEST_GUILD_ID, role_name)
         expected = (None, False)
         self.assertEqual(result, expected)
         self.assertFalse(mock_guild_create_role.called)
@@ -953,8 +950,10 @@ class TestMatchOrCreateGuildRolesToNames(TestCase):
         role_names = ['alpha', 'bravo']
         mock_guild_get_roles.return_value = ALL_ROLES
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_roles_from_names(TEST_GUILD_ID, role_names)
-        expected = [create_matched_role(ROLE_ALPHA), create_matched_role(ROLE_BRAVO)]
+        result = client.match_or_create_roles_from_names(
+            TEST_GUILD_ID, role_names)
+        expected = [create_matched_role(
+            ROLE_ALPHA), create_matched_role(ROLE_BRAVO)]
         self.assertEqual(
             DiscordRoles.create_from_matched_roles(result),
             DiscordRoles.create_from_matched_roles(expected)
@@ -969,9 +968,11 @@ class TestMatchOrCreateGuildRolesToNames(TestCase):
         mock_guild_get_roles.return_value = ALL_ROLES
         mock_guild_create_role.return_value = new_role
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_roles_from_names(TEST_GUILD_ID, role_names)
+        result = client.match_or_create_roles_from_names(
+            TEST_GUILD_ID, role_names)
         expected = \
-            [create_matched_role(ROLE_ALPHA), create_matched_role(new_role, True)]
+            [create_matched_role(ROLE_ALPHA),
+             create_matched_role(new_role, True)]
         self.assertEqual(
             DiscordRoles.create_from_matched_roles(result),
             DiscordRoles.create_from_matched_roles(expected)
@@ -987,7 +988,8 @@ class TestMatchOrCreateGuildRolesToNames(TestCase):
         mock_guild_get_roles.return_value = ALL_ROLES
         mock_guild_create_role.return_value = new_role
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_roles_from_names(TEST_GUILD_ID, role_names)
+        result = client.match_or_create_roles_from_names(
+            TEST_GUILD_ID, role_names)
         expected = [create_matched_role(ROLE_ALPHA)]
         self.assertEqual(
             DiscordRoles.create_from_matched_roles(result),
@@ -1001,8 +1003,10 @@ class TestMatchOrCreateGuildRolesToNames(TestCase):
         role_names = ['alpha', 'bravo', 'alpha']
         mock_guild_get_roles.return_value = ALL_ROLES
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_roles_from_names(TEST_GUILD_ID, role_names)
-        expected = [create_matched_role(ROLE_ALPHA), create_matched_role(ROLE_BRAVO)]
+        result = client.match_or_create_roles_from_names(
+            TEST_GUILD_ID, role_names)
+        expected = [create_matched_role(
+            ROLE_ALPHA), create_matched_role(ROLE_BRAVO)]
         self.assertEqual(
             DiscordRoles.create_from_matched_roles(result),
             DiscordRoles.create_from_matched_roles(expected)
@@ -1018,7 +1022,8 @@ class TestMatchOrCreateGuildRolesToNames(TestCase):
         mock_guild_get_roles.return_value = ALL_ROLES + [new_role]
         mock_guild_create_role.return_value = new_role
         client = DiscordClient2(TEST_BOT_TOKEN, mock_redis)
-        result = client.match_or_create_roles_from_names(TEST_GUILD_ID, role_names)
+        result = client.match_or_create_roles_from_names(
+            TEST_GUILD_ID, role_names)
         expected = [create_matched_role(new_role)]
         self.assertEqual(
             DiscordRoles.create_from_matched_roles(result),
@@ -1249,7 +1254,8 @@ class TestRateLimitMechanic(TestCase):
         requests_mocker.post(
             f'{API_BASE_URL}guilds/{TEST_GUILD_ID}/roles', json=self.my_role
         )
-        client = DiscordClient(TEST_BOT_TOKEN, mock_redis, is_rate_limited=False)
+        client = DiscordClient(
+            TEST_BOT_TOKEN, mock_redis, is_rate_limited=False)
         result = client.create_guild_role(
             guild_id=TEST_GUILD_ID, role_name=self.my_role['name']
         )
@@ -1272,7 +1278,8 @@ class TestBackoffHandling(TestCase):
         my_mock_redis = MagicMock(**{'pttl.return_value': -1})
         mock_redis_decr_or_set.return_value = 5
         client = DiscordClient(TEST_BOT_TOKEN, my_mock_redis)
-        result = client.create_guild_role(guild_id=TEST_GUILD_ID, role_name='dummy')
+        result = client.create_guild_role(
+            guild_id=TEST_GUILD_ID, role_name='dummy')
         self.assertDictEqual(result, self.my_role)
 
     def test_raise_exception_when_global_backoff_in_effect(
@@ -1308,7 +1315,8 @@ class TestBackoffHandling(TestCase):
         client.create_guild_role(
             guild_id=TEST_GUILD_ID, role_name='dummy'
         )
-        result = client.create_guild_role(guild_id=TEST_GUILD_ID, role_name='dummy')
+        result = client.create_guild_role(
+            guild_id=TEST_GUILD_ID, role_name='dummy')
         self.assertDictEqual(result, self.my_role)
         self.assertTrue(mock_sleep.called)
 
@@ -1334,7 +1342,8 @@ class TestBackoffHandling(TestCase):
             )
         except Exception as ex:
             self.assertIsInstance(ex, DiscordTooManyRequestsError)
-            self.assertEqual(ex.retry_after, retry_after + DURATION_CONTINGENCY)
+            self.assertEqual(ex.retry_after, retry_after +
+                             DURATION_CONTINGENCY)
             self.assertTrue(mock_redis_set_if_longer.called)
             args, kwargs = mock_redis_set_if_longer.call_args
             self.assertEqual(kwargs['px'], retry_after + DURATION_CONTINGENCY)

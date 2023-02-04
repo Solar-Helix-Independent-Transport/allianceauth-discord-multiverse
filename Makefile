@@ -38,4 +38,3 @@ devjs:
 
 buildjs:
 	cd frontend;yarn install;yarn build
-

@@ -3,12 +3,12 @@ import os
 
 from django.conf import settings
 
-
 logger = logging.getLogger(__name__)
 
 
 class LoggerAddTag(logging.LoggerAdapter):
     """add custom tag to a logger"""
+
     def __init__(self, logger, prefix):
         super().__init__(logger, {})
         self.prefix = prefix

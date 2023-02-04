@@ -1,29 +1,24 @@
 import logging
 from urllib.parse import urlencode
-from allianceauth.eveonline.models import EveAllianceInfo, EveCorporationInfo, EveFactionInfo
+
+from allianceauth.eveonline.models import (EveAllianceInfo, EveCorporationInfo,
+                                           EveFactionInfo)
+from allianceauth.services.hooks import NameFormatter
 from django.conf import settings
-
-from requests_oauthlib import OAuth2Session
-from requests.exceptions import HTTPError
-
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.timezone import now
-
-from allianceauth.services.hooks import NameFormatter
+from requests.exceptions import HTTPError
+from requests_oauthlib import OAuth2Session
 
 from . import __title__
-from .app_settings import (
-    DISCORD_APP_ID,
-    DISCORD_APP_SECRET,
-    DISCORD_BOT_TOKEN,
-    DISCORD_CALLBACK_URL
-)
+from .app_settings import (DISCORD_APP_ID, DISCORD_APP_SECRET,
+                           DISCORD_BOT_TOKEN, DISCORD_CALLBACK_URL)
 from .discord_client import DiscordClient
-from .discord_client.exceptions import DiscordClientException, DiscordApiBackoff
+from .discord_client.exceptions import (DiscordApiBackoff,
+                                        DiscordClientException)
 from .discord_client.helpers import match_or_create_roles_from_names
 from .utils import LoggerAddTag
-
 
 logger = LoggerAddTag(logging.getLogger(__name__), __title__)
 
@@ -134,7 +129,7 @@ class MultiDiscordUserManager(models.Manager):
         user: User,
         authorization_code: str,
         is_rate_limited: bool = True,
-        guild = None
+        guild=None
     ) -> bool:
         """adds a new Discord user
 

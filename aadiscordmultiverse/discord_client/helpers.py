@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Set, Iterable
+from typing import Iterable, Set
 
 
 class DiscordRoles:
@@ -85,7 +85,8 @@ class DiscordRoles:
             ])
 
         elif role_ids is None and managed_only is False and role_names is not None:
-            role_names = {self.sanitize_role_name(name).lower() for name in role_names}
+            role_names = {self.sanitize_role_name(
+                name).lower() for name in role_names}
             return type(self)([
                 role for role in self._roles.values()
                 if role["name"].lower() in role_names

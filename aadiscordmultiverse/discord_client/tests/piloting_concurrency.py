@@ -14,14 +14,14 @@ alliance Discord server for this.
 """
 
 import os
-from random import random
 import threading
+from random import random
 from time import sleep
+
 from django.test import TestCase
 
-from .. import DiscordClient, DiscordApiBackoff
-
 from ...utils import set_logger_to_file
+from .. import DiscordApiBackoff, DiscordClient
 
 logger = set_logger_to_file(
     'allianceauth.services.modules.discord.discord_client.client', __file__
@@ -52,7 +52,8 @@ def worker(num: int):
         while runs < NUMBER_OF_RUNS:
             run_info = '%s: run %d' % (worker_info, runs + 1)
             my_jitter_secs = random() * MAX_JITTER_PER_RUN_SECS
-            logger.info('%s - waiting %s secs', run_info, f'{my_jitter_secs:.3f}')
+            logger.info('%s - waiting %s secs', run_info,
+                        f'{my_jitter_secs:.3f}')
             sleep(my_jitter_secs)
             logger.info('%s - started', run_info)
             try:

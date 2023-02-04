@@ -1,18 +1,16 @@
 import logging
 
+from allianceauth.services.views import superuser_test
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import (login_required,
+                                            permission_required,
+                                            user_passes_test)
 from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
 
-from allianceauth.services.views import superuser_test
-
 from . import __title__
-from .models import MultiDiscordUser, DiscordManagedServer
+from .models import DiscordManagedServer, MultiDiscordUser
 from .utils import LoggerAddTag
-
 
 logger = LoggerAddTag(logging.getLogger(__name__), __title__)
 
@@ -24,22 +22,25 @@ ACCESS_PERM = 'aadiscordmultiverse.access_discord_multiverse'
 def deactivate_discord(request, guild_id):
     logger.debug("deactivate_discordmv called by user %s", request.user)
     try:
-        discord_user = MultiDiscordUser.objects.get(guild_id=guild_id, user=request.user)
+        discord_user = MultiDiscordUser.objects.get(
+            guild_id=guild_id, user=request.user)
         if discord_user.delete_user(
             is_rate_limited=False, handle_api_exceptions=True
         ):
-            logger.info("Successfully deactivated discord for user %s", request.user)
+            logger.info(
+                "Successfully deactivated discord for user %s", request.user)
             messages.success(request, _('Deactivated Discord account.'))
-            
+
     except Exception as e:
         logger.exception(e, exc_info=True)
         logger.error(
             "Unsuccessful attempt to deactivate discord for user %s", request.user
         )
         messages.error(
-            request, _('An error occurred while processing your Discord account.')
+            request, _(
+                'An error occurred while processing your Discord account.')
         )
-    
+
     return redirect("services:services")
 
 
@@ -48,7 +49,8 @@ def deactivate_discord(request, guild_id):
 def reset_discord(request, guild_id):
     logger.debug("reset_discordmv called by user %s", request.user)
     try:
-        discord_user = MultiDiscordUser.objects.get(guild_id=guild_id, user=request.user)
+        discord_user = MultiDiscordUser.objects.get(
+            guild_id=guild_id, user=request.user)
         if discord_user.delete_user(
             is_rate_limited=False, handle_api_exceptions=True
         ):
@@ -95,7 +97,7 @@ def discord_callback(request):
             "Did not receive state %s", request.user
         )
         success = False
-    else:  ## TODO Checck perms first.
+    else:  # TODO Checck perms first.
         guild_id = state
         guild = DiscordManagedServer.objects.get(guild_id=guild_id)
         if MultiDiscordUser.objects.add_user(

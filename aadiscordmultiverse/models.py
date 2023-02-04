@@ -1,22 +1,20 @@
 import logging
+
 from allianceauth.authentication.models import State
-from allianceauth.eveonline.models import EveAllianceInfo, EveCharacter, EveCorporationInfo, EveFactionInfo
-
-from requests.exceptions import HTTPError
-
-from django.contrib.auth.models import User, Group
-from django.db import models
-from django.utils.translation import gettext_lazy
-
+from allianceauth.eveonline.models import (EveAllianceInfo, EveCharacter,
+                                           EveCorporationInfo, EveFactionInfo)
 from allianceauth.groupmanagement.models import ReservedGroupName
 from allianceauth.notifications import notify
+from django.contrib.auth.models import Group, User
+from django.db import models
+from django.utils.translation import gettext_lazy
+from requests.exceptions import HTTPError
 
 from . import __title__
 from .discord_client import DiscordApiBackoff, DiscordClient, DiscordRoles
 from .discord_client.helpers import match_or_create_roles_from_names
-from .managers import MultiDiscordUserManager, DiscordManagedServerManager
+from .managers import DiscordManagedServerManager, MultiDiscordUserManager
 from .utils import LoggerAddTag
-
 
 logger = LoggerAddTag(logging.getLogger(__name__), __title__)
 
@@ -55,7 +53,7 @@ class DiscordManagedServer(models.Model):
         State,
         blank=True,
         help_text="States to whose members this server is available."
-        
+
     )
 
     group_access = models.ManyToManyField(
