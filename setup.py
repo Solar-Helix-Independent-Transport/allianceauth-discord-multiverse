@@ -21,7 +21,7 @@ setup(
     description='Alliance Auth Plugin',
     long_description=README,
     long_description_content_type="text/markdown",
-    url='https://github.com/pvyParts/allianceauth-discord-multiverse',
+    url='https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multiverse',
     author='AaronKable',
     author_email='aaronkable@gmail.com',
     classifiers=[
