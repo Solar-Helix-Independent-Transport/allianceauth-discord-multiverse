@@ -5,7 +5,8 @@ from allianceauth.services.hooks import ServicesHook, UrlHook
 from django.contrib.auth.models import User
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from django.template.loader import render_to_string
+from django.template import TemplateDoesNotExist
+from django.template.loader import get_template, render_to_string
 from pytz import AmbiguousTimeError
 
 from . import tasks, urls
@@ -29,7 +30,14 @@ class MultiDiscordService(ServicesHook):
         ServicesHook.__init__(self)
         self.urlpatterns = urlpatterns
         self.name = 'dmv'
-        self.service_ctrl_template = 'aadiscordmultiverse/dmv_service_ctrl.html'
+
+        template = 'aadiscordmultiverse/dmv_service_ctrl.html'
+        try:
+            t = get_template("services/services_ctrl_base.html")
+            template = 'aadiscordmultiverse/dmv_service_ctrl_bs5.html'
+        except TemplateDoesNotExist:
+            pass
+        self.service_ctrl_template = template
         self.access_perm = 'aadiscordmultiverse.access_discord_multiverse'
         self.name_format = '{character_name}'
 
