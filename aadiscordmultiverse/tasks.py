@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from .app_settings import DISCORD_TASKS_MAX_RETRIES, DISCORD_TASKS_RETRY_PAUSE
 from .discord_client import DiscordApiBackoff
-from .models import MultiDiscordUser
+from .models import DiscordManagedServer, MultiDiscordUser
 from .utils import LoggerAddTag
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ BULK_TASK_PRIORITY = 6
 
 
 @shared_task(
-    bind=True, name='discord.update_groups', base=QueueOnce, max_retries=None
+    bind=True, base=QueueOnce, max_retries=None
 )
 def update_groups(self, guild_id: int, user_pk: int, state_name: str = None) -> None:
     """Update roles on Discord for given user according to his current groups
@@ -33,7 +33,7 @@ def update_groups(self, guild_id: int, user_pk: int, state_name: str = None) -> 
 
 
 @shared_task(
-    bind=True, name='discord.update_nickname', base=QueueOnce, max_retries=None
+    bind=True, base=QueueOnce, max_retries=None
 )
 def update_nickname(self, guild_id: int, user_pk: int, nickname: str = None) -> None:
     """Set nickname on Discord for given user to his main character name
@@ -47,7 +47,7 @@ def update_nickname(self, guild_id: int, user_pk: int, nickname: str = None) -> 
 
 
 @shared_task(
-    bind=True, name='discord.update_username', base=QueueOnce, max_retries=None
+    bind=True, base=QueueOnce, max_retries=None
 )
 def update_username(self, guild_id: int, user_pk: int) -> None:
     """Update locally stored Discord username from Discord server for given user
@@ -59,7 +59,7 @@ def update_username(self, guild_id: int, user_pk: int) -> None:
 
 
 @shared_task(
-    bind=True, name='discord.delete_user', base=QueueOnce, max_retries=None
+    bind=True, base=QueueOnce, max_retries=None
 )
 def delete_user(self, guild_id: int, user_pk: int, notify_user: bool = False) -> None:
     """Delete Discord user
@@ -132,14 +132,14 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
         )
 
 
-@shared_task(name='discord.update_all_groups')
-def update_all_groups() -> None:
+@shared_task()
+def update_all_groups(guild_id) -> None:
     """Update roles for all known users with a Discord account."""
-    discord_users_qs = MultiDiscordUser.objects.all()
+    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
     _bulk_update_groups_for_users(discord_users_qs)
 
 
-@shared_task(name='discord.update_groups_bulk')
+@shared_task()
 def update_groups_bulk(user_pks: list) -> None:
     """Update roles for list of users with a Discord account in bulk."""
     discord_users_qs = MultiDiscordUser.objects\
@@ -159,14 +159,14 @@ def _bulk_update_groups_for_users(discord_users_qs: QuerySet) -> None:
     chain(update_groups_chain).apply_async(priority=BULK_TASK_PRIORITY)
 
 
-@shared_task(name='discord.update_all_nicknames')
-def update_all_nicknames() -> None:
+@shared_task()
+def update_all_nicknames(guild_id) -> None:
     """Update nicknames for all known users with a Discord account."""
-    discord_users_qs = MultiDiscordUser.objects.all()
+    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
     _bulk_update_nicknames_for_users(discord_users_qs)
 
 
-@shared_task(name='discord.update_nicknames_bulk')
+@shared_task()
 def update_nicknames_bulk(user_pks: list) -> None:
     """Update nicknames for list of users with a Discord account in bulk."""
     discord_users_qs = MultiDiscordUser.objects\
@@ -228,24 +228,24 @@ def _task_perform_users_action(self, method: str, **kwargs) -> Any:
 
 
 @shared_task(
-    bind=True, name='discord.update_servername', base=QueueOnce, max_retries=None
+    bind=True, base=QueueOnce, max_retries=None
 )
 def update_servername(self, guild_id: int) -> None:
     """Updates the Discord server name"""
     _task_perform_users_action(self, method="server_name", use_cache=False)
 
 
-@shared_task(name='discord.update_all_usernames')
-def update_all_usernames() -> None:
+@shared_task()
+def update_all_usernames(guild_id) -> None:
     """Update all usernames for all known users with a Discord account.
     Also updates the server name
     """
     update_servername.delay()
-    discord_users_qs = MultiDiscordUser.objects.all()
+    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
     _bulk_update_usernames_for_users(discord_users_qs)
 
 
-@shared_task(name='discord.update_usernames_bulk')
+@shared_task()
 def update_usernames_bulk(user_pks: list) -> None:
     """Update usernames for list of users with a Discord account in bulk."""
     discord_users_qs = MultiDiscordUser.objects\
@@ -266,18 +266,22 @@ def _bulk_update_usernames_for_users(discord_users_qs: QuerySet) -> None:
     chain(update_usernames_chain).apply_async(priority=BULK_TASK_PRIORITY)
 
 
-@shared_task(name='discord.update_all')
-def update_all() -> None:
+@shared_task()
+def update_all(guild_id) -> None:
     """Updates groups and nicknames (when activated) for all users."""
-    discord_users_qs = MultiDiscordUser.objects.all()
+    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
+    guild = DiscordManagedServer.objects.get(guild_id=guild_id)
     logger.info(
         'Starting to bulk update all for %s Discord users', discord_users_qs.count()
     )
     update_all_chain = list()
     for discord_user in discord_users_qs:
-        update_all_chain.append(update_groups.si(discord_user.user.pk))
-        update_all_chain.append(update_username.si(discord_user.user.pk))
-        if DISCORD_SYNC_NAMES:
-            update_all_chain.append(update_nickname.si(discord_user.user.pk))
+        update_all_chain.append(update_groups.si(
+            guild.guild_id, discord_user.user.pk))
+        update_all_chain.append(update_username.si(
+            guild.guild_id, discord_user.user.pk))
+        if guild.sync_names:
+            update_all_chain.append(update_nickname.si(
+                guild.guild_id, discord_user.user.pk))
 
     chain(update_all_chain).apply_async(priority=BULK_TASK_PRIORITY)

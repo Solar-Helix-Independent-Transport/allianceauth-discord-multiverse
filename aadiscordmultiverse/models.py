@@ -146,7 +146,8 @@ class MultiDiscordUser(models.Model):
         - False on error or raises exception
         """
         if not nickname:
-            nickname = MultiDiscordUser.objects.user_formatted_nick(self.user)
+            nickname = MultiDiscordUser.objects.user_formatted_nick(
+                self.user, self.guild)
         if nickname:
             client = MultiDiscordUser.objects._bot_client()
             success = client.modify_guild_member(
@@ -213,7 +214,7 @@ class MultiDiscordUser(models.Model):
             client=client,
             guild_id=self.guild_id,
             role_names=MultiDiscordUser.objects.user_group_names(
-                user=self.user, groups_ignored=self.guild.groups_ignored.all(), state_name=state_name
+                user=self.user, groups_ignored=self.guild.ignored_groups.all(), state_name=state_name
             )
         )
         logger.debug(

@@ -225,14 +225,18 @@ class MultiDiscordUserManager(models.Manager):
             return False
 
     @staticmethod
-    def user_formatted_nick(user: User) -> str:
+    def user_formatted_nick(user: User, guild) -> str:
         """returns the name of the given users main character with name formatting
         or None if user has no main
         """
-        from .auth_hooks import MultiDiscordService
 
         if user.profile.main_character:
-            return NameFormatter(MultiDiscordService(), user).format_name()
+            from aadiscordmultiverse.auth_hooks import \
+                MultiDiscordService  # nopep8
+
+            tmp_type = type(
+                f"MultiDiscordService{guild.guild_id}", (MultiDiscordService,), {}, gid=guild.guild_id, guild_name=guild.server_name)
+            return NameFormatter(tmp_type(), user).format_name()
         else:
             return None
 

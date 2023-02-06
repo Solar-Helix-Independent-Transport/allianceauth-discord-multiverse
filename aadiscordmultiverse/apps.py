@@ -13,5 +13,6 @@ class DiscordMultiVerseServiceConfig(AppConfig):
         from .auth_hooks import add_del_callback  # NOPEP8
         try:
             add_del_callback()
-        except:
+        except Exception as e:
             pass
+        from . import signals  # NOPEP8

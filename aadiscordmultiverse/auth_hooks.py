@@ -22,14 +22,18 @@ SINGLE_TASK_PRIORITY = 3
 
 class MultiDiscordService(ServicesHook):
     """Service for managing many Discord servers with a Single Auth"""
-    def __init_subclass__(cls, gid):
+    def __init_subclass__(cls, gid, guild_name=None):
         super().__init_subclass__()
         cls.guild_id = gid
+        cls.guild_name = guild_name
 
     def __init__(self):
         ServicesHook.__init__(self)
         self.urlpatterns = urlpatterns
-        self.name = 'dmv'
+        if hasattr(self, "guild_id"):
+            self.name = f'dmv:{self.guild_name if self.guild_name else self.guild_id}'
+        else:
+            self.name = f'dmv'
 
         template = 'aadiscordmultiverse/dmv_service_ctrl.html'
         try:
@@ -161,8 +165,10 @@ def add_del_callback(**kwargs):
                 del (h)
     for gid in guild_add:
         print(f"GUILD ID {gid}")
+        guild = DiscordManagedServer.objects.get(guild_id=gid)
         guild_class = type(
-            f"MultiDiscordService{gid}", (MultiDiscordService,), {}, gid=gid)
+            f"MultiDiscordService{gid}", (MultiDiscordService,), {}, gid=guild.guild_id, guild_name=guild.server_name)
+
         hooks._hooks["services_hook"].append(guild_class)
 
 
