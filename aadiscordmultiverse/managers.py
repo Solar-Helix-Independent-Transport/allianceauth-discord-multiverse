@@ -140,7 +140,7 @@ class MultiDiscordUserManager(models.Manager):
         """
         try:
             # TODO pull the guild config and confirm perms and settings
-            nickname = self.user_formatted_nick(user)
+            nickname = self.user_formatted_nick(user, guild)
             group_names = self.user_group_names(
                 user=user, groups_ignored=guild.ignored_groups.all(), state_name=user.profile.state.name)
             access_token = self._exchange_auth_code_for_token(
