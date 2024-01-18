@@ -1,12 +1,15 @@
+import logging
 from django.apps import AppConfig
 
 from . import __branch__, __version__
+
+logger = logging.getLogger(__name__)
 
 
 class DiscordMultiVerseServiceConfig(AppConfig):
     name = 'aadiscordmultiverse'
     label = 'aadiscordmultiverse'
-    verbose_name = 'Discord Multiverse ({__branch__}:{__version__})'
+    verbose_name = f"Discord Multiverse ({__branch__}:{__version__})"
 
     def ready(self):
         # run on startup to sync services!
@@ -14,5 +17,6 @@ class DiscordMultiVerseServiceConfig(AppConfig):
         try:
             add_del_callback()
         except Exception as e:
-            pass
+            logger.error(e)
+            
         from . import signals  # NOPEP8
