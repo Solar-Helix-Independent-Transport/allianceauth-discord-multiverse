@@ -60,7 +60,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
             queries.append(
                 models.Q(
                     corporations_access__in=EveCorporationInfo.objects.filter(
-                        main_character.corporation_id
+                        corporation_id=main_character.corporation_id
                     )
                 )
             )
