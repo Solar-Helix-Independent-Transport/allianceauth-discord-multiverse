@@ -23,11 +23,6 @@ logger = logging.getLogger(__name__)
 
 class DiscordManagedServerQuerySet(models.QuerySet):
     def visible_to(self, user):
-        # superusers/global get all visible
-        if user.is_superuser or user.has_perm('aadiscordmultiverse.access_all_discords'):
-            logger.debug(f'Returning all Servers for Global Perm {user}')
-            return self
-
         if not user.has_perm('aadiscordmultiverse.access_discord_multiverse'):
             logger.debug(f'Returning No Servers for No Access Perm {user}')
             return self.none()
@@ -35,12 +30,18 @@ class DiscordManagedServerQuerySet(models.QuerySet):
         try:
             main_character = user.profile.main_character
             assert main_character
+
+            # superusers/global get all visible
+            if user.is_superuser or user.has_perm('aadiscordmultiverse.access_all_discords'):
+                logger.debug(f'Returning all Servers for Global Perm {user}')
+                return self
+
             # build all accepted queries and then OR them
             queries = []
             # States access everyone has a state
             queries.append(
                 models.Q(
-                    state_access__in=user.profile.state
+                    state_access=user.profile.state
                 )
             )
             # Groups access, is ok if no groups.
@@ -53,13 +54,13 @@ class DiscordManagedServerQuerySet(models.QuerySet):
             # Character access
             queries.append(
                 models.Q(
-                    characters_access__in=main_character
+                    character_access=main_character
                 )
             )
             # Corp access
             queries.append(
                 models.Q(
-                    corporations_access__in=EveCorporationInfo.objects.filter(
+                    corporation_access=EveCorporationInfo.objects.get(
                         corporation_id=main_character.corporation_id
                     )
                 )
@@ -68,7 +69,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
             if main_character.alliance_id:
                 queries.append(
                     models.Q(
-                        alliances_access__in=EveAllianceInfo.objects.filter(
+                        alliance_access=EveAllianceInfo.objects.get(
                             alliance_id=main_character.alliance_id
                         )
                     )
@@ -77,7 +78,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
             if main_character.faction_id:
                 queries.append(
                     models.Q(
-                        faction_access__in=EveFactionInfo.objects.filter(
+                        faction_access=EveFactionInfo.objects.get(
                             faction_id=main_character.faction_id
                         )
                     )

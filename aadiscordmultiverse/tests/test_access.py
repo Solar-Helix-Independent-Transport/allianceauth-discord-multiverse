@@ -1,4 +1,4 @@
-from allianceauth.authentication.models import CharacterOwnership
+from allianceauth.authentication.models import CharacterOwnership, State
 from allianceauth.eveonline.models import (EveAllianceInfo, EveCharacter,
                                            EveCorporationInfo)
 from allianceauth.tests.auth_utils import AuthUtils
@@ -125,7 +125,119 @@ class TestAccessPerms(TestCase):
         )
 
     def test_no_perms(self):
-        print(DiscordManagedServer.objects.visible_to(self.user1))
-        print(DiscordManagedServer.objects.visible_to(self.user2))
-        print(DiscordManagedServer.objects.visible_to(self.user3))
-        print(DiscordManagedServer.objects.visible_to(self.user4))
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user1).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user2).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+    def test_all_perms(self):
+        self.user1.user_permissions.add(self.access_perm)
+        self.user1.user_permissions.add(self.all_servers_perm)
+
+        self.user4.user_permissions.add(self.access_perm)
+        self.user4.user_permissions.add(self.all_servers_perm)
+
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user1).count(), 2)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user2).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        # No Main Character
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+    def test_state_perms_u1(self):
+        member = State.objects.get(name="Member")
+        member.permissions.add(self.access_perm)
+        member.member_characters.add(self.char1)  # main u1
+        member.member_characters.add(self.char9)  # alt u4
+
+        self.user1.refresh_from_db()
+        self.user4.refresh_from_db()
+
+        self.server_2_with_perms.state_access.add(member)
+
+        self.assertIn(
+            self.server_2_with_perms,
+            DiscordManagedServer.objects.visible_to(self.user1)
+        )
+
+        self.assertNotIn(
+            self.server_1_no_perms_at_all,
+            DiscordManagedServer.objects.visible_to(self.user1)
+        )
+
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user2).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+    def test_corp_perms_corp_1(self):
+        guest = State.objects.get(name="Guest")
+        guest.permissions.add(self.access_perm)
+
+        self.server_2_with_perms.corporation_access.add(self.corp1)
+
+        self.assertIn(
+            self.server_2_with_perms,
+            DiscordManagedServer.objects.visible_to(self.user1)
+        )
+        self.assertNotIn(
+            self.server_1_no_perms_at_all,
+            DiscordManagedServer.objects.visible_to(self.user1)
+        )
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user2).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+    def test_corp_perms_alli_1(self):
+        guest = State.objects.get(name="Guest")
+        guest.permissions.add(self.access_perm)
+
+        self.server_2_with_perms.alliance_access.add(self.alli1)
+
+        self.assertIn(
+            self.server_2_with_perms,
+            DiscordManagedServer.objects.visible_to(self.user2)
+        )
+        self.assertNotIn(
+            self.server_1_no_perms_at_all,
+            DiscordManagedServer.objects.visible_to(self.user2)
+        )
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user1).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+    def test_corp_perms_alli_1(self):
+        guest = State.objects.get(name="Guest")
+        guest.permissions.add(self.access_perm)
+
+        self.server_2_with_perms.alliance_access.add(self.alli1)
+
+        self.assertIn(
+            self.server_2_with_perms,
+            DiscordManagedServer.objects.visible_to(self.user2)
+        )
+        self.assertNotIn(
+            self.server_1_no_perms_at_all,
+            DiscordManagedServer.objects.visible_to(self.user2)
+        )
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user1).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
+        self.assertEqual(
+            DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
