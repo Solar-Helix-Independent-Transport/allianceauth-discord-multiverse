@@ -158,21 +158,25 @@ def add_del_callback(*args, **kwargs):
     ).values_list("guild_id", flat=True))
     logger.info(f"Processing Guilds {guild_add}")
 
-    # Loop all services andd look for our hooks
-    for h in hooks._hooks["services_hook"]:
+    # Loop all services and look for our hooks
+    for h in hooks._hooks.get("services_hook", []):
         if isinstance(h(), MultiDiscordService):
             if h.guild_id in guild_add:
                 guild_add.remove(h.guild_id)
             else:
+                # this one was deleted remove it
                 del (h)
 
     for gid in guild_add:
         logger.info(f"Adding GUILD ID {gid}")
         guild = DiscordManagedServer.objects.get(guild_id=gid)
         guild_class = type(
-            f"MultiDiscordService{gid}", (MultiDiscordService,), {}, gid=guild.guild_id, guild_name=guild.server_name)
-
-        hooks._hooks["services_hook"].append(guild_class)
+            f"MultiDiscordService{gid}",
+            (MultiDiscordService,), {},
+            gid=guild.guild_id,
+            guild_name=guild.server_name
+        )
+        hooks.register("services_hook", guild_class)
 
 
 post_save.connect(add_del_callback, sender=DiscordManagedServer)

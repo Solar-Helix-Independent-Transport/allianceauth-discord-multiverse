@@ -17,7 +17,7 @@ class DiscordMultiVerseServiceConfig(AppConfig):
         try:
             add_del_callback()
         except Exception as e:
-            logger.error("Failed to Init DMV Server Hooks")
+            logger.error("DMV: Failed to Init DMV Server Hook")
             logger.error(e, stack_info=True)
 
         from . import signals  # NOPEP8
