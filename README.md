@@ -28,6 +28,9 @@ HIGH PRIO!
 
 1.  pip install `package`
 2.  Add `'aadiscordmultiverse',` to your `INSTALLED_APPS` in your projects `local.py`
+    #TODO add redirect to sso app
+    #TODO add settings for redirect or make it auto
+    #TODO add the other step...
 3.  Run migrations, collectstatic and restart auth.
 4.  Setup your permissions as documented below
 

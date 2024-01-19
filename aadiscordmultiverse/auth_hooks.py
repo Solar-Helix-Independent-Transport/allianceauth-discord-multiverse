@@ -153,9 +153,11 @@ class MultiDiscordService(ServicesHook):
             self.delete_user(user, notify_user=True)
 
 
-def add_del_callback(**kwargs):
+def add_del_callback(*args, **kwargs):
     guild_add = list(DiscordManagedServer.objects.all(
     ).values_list("guild_id", flat=True))
+    logger.info(f"Processing Guilds {guild_add}")
+
     # Loop all services andd look for our hooks
     for h in hooks._hooks["services_hook"]:
         if isinstance(h(), MultiDiscordService):
@@ -163,8 +165,9 @@ def add_del_callback(**kwargs):
                 guild_add.remove(h.guild_id)
             else:
                 del (h)
+
     for gid in guild_add:
-        print(f"GUILD ID {gid}")
+        logger.info(f"Adding GUILD ID {gid}")
         guild = DiscordManagedServer.objects.get(guild_id=gid)
         guild_class = type(
             f"MultiDiscordService{gid}", (MultiDiscordService,), {}, gid=guild.guild_id, guild_name=guild.server_name)

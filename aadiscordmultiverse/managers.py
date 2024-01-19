@@ -35,7 +35,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
         try:
             main_character = user.profile.main_character
             assert main_character
-            # build all accepted queries
+            # build all accepted queries and then OR them
             queries = []
             # States access everyone has a state
             queries.append(
