@@ -57,8 +57,10 @@ class MultiDiscordService(ServicesHook):
     def render_services_ctrl(self, request):
         if self.user_has_account(request.user):
             user_has_account = True
-            username = request.user.discord.username
-            discriminator = request.user.discord.discriminator
+            server_user = MultiDiscordUser.objects.get(
+                user=request.user, guild_id=self.guild_id)
+            username = server_user.username
+            discriminator = server_user.discriminator
             if username and discriminator:
                 discord_username = f'{username}#{discriminator}'
             else:
