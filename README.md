@@ -22,7 +22,6 @@ MID PRIO:
 HIGH PRIO!
 
 - TODO: Check AuthBot to see what it does.
-- TODO: Check/update all members on change of server model.
 
 ### Installation
 
@@ -52,8 +51,9 @@ HIGH PRIO!
 1.  Add a new `DISCORD MANAGED SERVER` in admin
 2.  Set the guild id to match your new server
 3.  set any access control settings you need
-4.  Set the ignored groups for the server. These groups wll not be synced to this discord server.
+4.  Set the included groups for the server. These are the only groups that will not be synced to this discord server. Enable the "managed groups" option if you want the auto corp/ali groups to sync magically too.
 5.  Click Save
-6.  Goto Services in the main auth site
-7.  Click "Link Discord" on the new server and add your auth bot to the correct server.
-8.  People can now join as required
+6.  Restart Auth
+7.  Goto Services in the main auth site
+8.  Click "Link Discord" on the new server and add your auth bot to the correct server.
+9.  People can now join as required

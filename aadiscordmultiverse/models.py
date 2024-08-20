@@ -84,12 +84,25 @@ class DiscordManagedServer(models.Model):
         help_text="Factions to whose members this server is available."
     )
 
-    ignored_groups = models.ManyToManyField(
+    included_groups = models.ManyToManyField(
         Group,
         blank=True,
-        help_text="Groups that will not be synced to this discord server.",
-        related_name="dmv_ignored_groups"
+        help_text="Groups that will be synced to this discord server.",
+        related_name="dmv_included_groups"
     )
+
+    include_all_managed_groups = models.BooleanField(
+        default=True,
+        help_text="Always sync Groups that are managed by Alliance Auth Core (corp/alliance)",
+    )
+
+    def get_all_roles_to_sync(self):
+        groups = self.included_groups.all()
+
+        if self.include_all_managed_groups:
+            groups = groups | Group.objects.filter(authgroup__internal=True)
+
+        return groups
 
 
 class MultiDiscordUser(models.Model):
@@ -214,7 +227,9 @@ class MultiDiscordUser(models.Model):
             client=client,
             guild_id=self.guild_id,
             role_names=MultiDiscordUser.objects.user_group_names(
-                user=self.user, groups_ignored=self.guild.ignored_groups.all(), state_name=state_name
+                user=self.user,
+                groups_included=self.guild.get_all_roles_to_sync(),
+                state_name=state_name
             )
         )
         logger.debug(

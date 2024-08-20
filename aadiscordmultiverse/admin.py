@@ -16,12 +16,18 @@ class MultiDiscordUserAdmin(ServicesUserAdmin):
     list_filter = ServicesUserAdmin.list_filter + ('activated',)
     ordering = ('-activated',)
 
+    @admin.display(
+        description='Discord ID (UID)',
+        ordering='uid',
+    )
     def _uid(self, obj):
         return obj.uid
 
-    _uid.short_description = 'Discord ID (UID)'
-    _uid.admin_order_field = 'uid'
 
+    @admin.display(
+        description='Discord Username',
+        ordering='username',
+    )
     def _username(self, obj):
         if obj.username and obj.discriminator:
             return f'{obj.username}#{obj.discriminator}'
@@ -32,12 +38,17 @@ class MultiDiscordUserAdmin(ServicesUserAdmin):
         for user in queryset:
             user.delete_user()
 
-    _username.short_description = 'Discord Username'
-    _username.admin_order_field = 'username'
 
 
 @admin.register(DiscordManagedServer)
 class DiscordMultiverseServer(admin.ModelAdmin):
     list_display = ['server_name', 'guild_id', 'sync_names']
-    filter_horizontal = ["ignored_groups", "faction_access", "alliance_access",
-                         "corporation_access", "character_access", "group_access", "state_access"]
+    filter_horizontal = [
+        "included_groups",
+        "faction_access",
+        "alliance_access",
+        "corporation_access",
+        "character_access",
+        "group_access",
+        "state_access",
+        ]

@@ -143,7 +143,10 @@ class MultiDiscordUserManager(models.Manager):
             # TODO pull the guild config and confirm perms and settings
             nickname = self.user_formatted_nick(user, guild)
             group_names = self.user_group_names(
-                user=user, groups_ignored=guild.ignored_groups.all(), state_name=user.profile.state.name)
+                user=user,
+                groups_included=guild.get_all_roles_to_sync(),
+                state_name=user.profile.state.name
+            )
             access_token = self._exchange_auth_code_for_token(
                 authorization_code)
             user_client = DiscordClient(
@@ -242,13 +245,14 @@ class MultiDiscordUserManager(models.Manager):
             return None
 
     @staticmethod
-    def user_group_names(user: User, groups_ignored=Group.objects.none(), state_name: str = None) -> list:
+    def user_group_names(user: User, groups_included=Group.objects.none(), state_name: str = None) -> list:
         """returns list of group names plus state the given user is a member of"""
         if not state_name:
             state_name = user.profile.state.name
         group_names = (
-            [group.name for group in user.groups.all().exclude(
-                id__in=groups_ignored.values_list("id"))] + [state_name]
+            list(
+                    user.groups.filter(id__in=groups_included.values_list("id", flat=True))
+            ) + [state_name]
         )
         logger.debug(
             "Group names for roles updates of user %s are: %s", user, group_names
