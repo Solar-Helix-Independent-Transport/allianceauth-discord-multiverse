@@ -60,11 +60,7 @@ class MultiDiscordService(ServicesHook):
             server_user = MultiDiscordUser.objects.get(
                 user=request.user, guild_id=self.guild_id)
             username = server_user.username
-            discriminator = server_user.discriminator
-            if username and discriminator:
-                discord_username = f'{username}#{discriminator}'
-            else:
-                discord_username = ''
+            discord_username = f'@{username}'
         else:
             discord_username = ''
             user_has_account = False
