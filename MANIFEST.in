@@ -1,5 +1,0 @@
-include LICENSE
-include README.md
-recursive-include aadiscordmultiverse/templates *
-recursive-include aadiscordmultiverse/static *
-recursive-include aadiscordmultiverse/ *.py
