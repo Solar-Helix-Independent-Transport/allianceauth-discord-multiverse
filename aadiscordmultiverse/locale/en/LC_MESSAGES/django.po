@@ -1,0 +1,94 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-30 13:51+1000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: aadiscordmultiverse/models.py:324
+msgid "Discord Account Disabled"
+msgstr ""
+
+#: aadiscordmultiverse/models.py:326
+msgid ""
+"Your Discord account was disabled automatically by Auth. If you think this "
+"was a mistake, please contact an admin."
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:3
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:5
+msgid "Discord"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:6
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:26
+msgid "Not Activated"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:15
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:12
+msgid "Unknown Server"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:21
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:35
+msgid "Join the Discord server"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:25
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:39
+msgid "Leave and rejoin the Discord Server (Reset)"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:28
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:42
+msgid "Leave the Discord server"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl.html:36
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:48
+msgid "Link Discord Server"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:18
+msgid "Active"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:18
+msgid "Disabled"
+msgstr ""
+
+#: aadiscordmultiverse/templates/aadiscordmultiverse/dmv_service_ctrl_bs5.html:20
+msgid "Unlinked Server"
+msgstr ""
+
+#: aadiscordmultiverse/views.py:30
+msgid "Deactivated Discord account."
+msgstr ""
+
+#: aadiscordmultiverse/views.py:39 aadiscordmultiverse/views.py:68
+msgid "An error occurred while processing your Discord account."
+msgstr ""
+
+#: aadiscordmultiverse/views.py:120
+msgid "Your Discord account has been successfully activated."
+msgstr ""
+
+#: aadiscordmultiverse/views.py:126
+msgid ""
+"An error occurred while trying to activate your Discord account. Please try "
+"again."
+msgstr ""

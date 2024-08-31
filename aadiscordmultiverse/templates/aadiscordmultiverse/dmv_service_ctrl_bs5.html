@@ -7,25 +7,25 @@
 
 {% block url %}
     {% if server_name %}
-        {{server_name}}
+        {{ server_name }}
     {% else %}
-        (Unknown Server)
+        ({% translate "Unknown Server" %}])
     {% endif %}
 {% endblock %}
 
 {% block active %}
     {% if server_name %}
-        <span class="badge {% if user_has_account %}bg-success{% else %}bg-warning{% endif %}">{% if user_has_account %}Active{% else %}Disabled{% endif %}</span>
+        <span class="badge {% if user_has_account %}bg-success{% else %}bg-warning{% endif %}">{% if user_has_account %}{% translate "Active" %}{% else %}{% translate "Disabled" %}{% endif %}</span>
     {% else %}
-        <span class="badge bg-danger">Unlinked Server</span>
+        <span class="badge bg-danger">{% translate "Unlinked Server" %}</span>
     {% endif %}
 {% endblock %}
 
 {% block user %}
     {% if not user_has_account %}
-        (not activated)
+        ({% translate "Not Activated" %})
     {% else %}
-        {{discord_username}}
+        {{ discord_username }}
     {% endif %}
 {% endblock %}
 

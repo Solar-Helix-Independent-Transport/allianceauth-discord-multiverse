@@ -3,16 +3,16 @@
     <td class="text-center">{% translate "Discord" %}</td>
     <td class="text-center">
         {% if not user_has_account %}
-            (not activated)
+            ({% translate "Not Activated" %})
         {% else %}
-            {{discord_username}}
+            {{ discord_username }}
         {% endif %}
     </td>
     <td class="text-center">
         {% if server_name %}
-            {{server_name}}
+            {{ server_name }}
         {% else %}
-            (Unknown Server)
+            ( {% translate "Unknown Server" %} )
         {% endif %}
     </td>
     <td class="text-center">
