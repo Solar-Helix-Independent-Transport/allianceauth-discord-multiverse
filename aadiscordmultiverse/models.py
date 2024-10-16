@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 
 from allianceauth.authentication.models import State
@@ -104,6 +105,8 @@ class DiscordManagedServer(models.Model):
 
         return groups
 
+    def __str__(self):
+        return f"{self.guild_id}: {self.server_name}"
 
 class MultiDiscordUser(models.Model):
     guild = models.ForeignKey(
@@ -350,3 +353,49 @@ class MultiDiscordUser(models.Model):
                 return False
             else:
                 raise ex
+
+
+class FilterBase(models.Model):
+
+    name = models.CharField(max_length=500)
+    description = models.CharField(max_length=500)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+
+    def process_filter(self, user: User):
+        raise NotImplementedError("Please Create a filter!")
+
+
+class ServerActiveFilter(FilterBase):
+    reversed_logic = models.BooleanField(
+        default=False, help_text="If set all members WITHOUT an account will pass the test.")
+    server = models.ForeignKey(DiscordManagedServer, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Smart Filter: Discord Server Active Loaded"
+        verbose_name_plural = verbose_name
+
+    def process_filter(self, user: User):
+        try:
+            return self.audit_filter([user])[user.id]["check"]
+        except Exception as e:
+            logger.error(e, exc_info=1)
+            return False
+
+    def audit_filter(self, users):
+        logic = self.reversed_logic
+        accounts = MultiDiscordUser.objects.filter(
+            guild = self.server,
+            user__in = users
+        )
+        output = defaultdict(lambda: {"message": "", "check": logic})
+        for a in accounts:
+            output[a.user_id] = {
+                "message": "Active", "check": not logic
+            }
+        return output
+

@@ -3,10 +3,11 @@ import logging
 from allianceauth.services.admin import ServicesUserAdmin
 from django.contrib import admin
 
-from .models import DiscordManagedServer, MultiDiscordUser
+from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
 
 logger = logging.getLogger(__name__)
 
+admin.site.register(ServerActiveFilter)
 
 @admin.register(MultiDiscordUser)
 class MultiDiscordUserAdmin(ServicesUserAdmin):
@@ -52,3 +53,4 @@ class DiscordMultiverseServer(admin.ModelAdmin):
         "group_access",
         "state_access",
         ]
+

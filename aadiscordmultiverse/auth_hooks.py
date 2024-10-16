@@ -10,7 +10,7 @@ from django.template.loader import get_template, render_to_string
 from pytz import AmbiguousTimeError
 
 from . import tasks, urls
-from .models import DiscordManagedServer, MultiDiscordUser
+from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
 from .urls import urlpatterns
 from .utils import LoggerAddTag
 
@@ -179,3 +179,7 @@ def add_del_callback(*args, **kwargs):
 
 post_save.connect(add_del_callback, sender=DiscordManagedServer)
 post_delete.connect(add_del_callback, sender=DiscordManagedServer)
+
+@hooks.register("secure_group_filters")
+def filters():
+    return [ServerActiveFilter]
