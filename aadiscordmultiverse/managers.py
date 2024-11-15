@@ -140,7 +140,6 @@ class MultiDiscordUserManager(models.Manager):
         Returns: True on success, else False or raises exception
         """
         try:
-            # TODO pull the guild config and confirm perms and settings
             nickname = self.user_formatted_nick(user, guild)
             group_names = self.user_group_names(
                 user=user,
@@ -154,6 +153,56 @@ class MultiDiscordUserManager(models.Manager):
             discord_user = user_client.current_user()
             user_id = discord_user['id']
             bot_client = self._bot_client(is_rate_limited=is_rate_limited)
+
+            if user.is_superuser or user.has_perm('aadiscordmultiverse.access_all_discords'):
+                logger.debug(
+                    "User %s with Discord ID %s passed superuser/permission check",
+                    user,
+                    user_id,
+                )
+            elif user.profile.state in guild.state_access.all():
+                logger.debug(
+                    "User %s with Discord ID %s passed state check",
+                    user,
+                    user_id,
+                )
+            elif set(guild.group_access.all()) & set(user.groups.all()):
+                logger.debug(
+                    "User %s with Discord ID %s passed group check",
+                    user,
+                    user_id,
+                )
+            elif user.profile.main_character.corporation in guild.corporation_access.all():
+                logger.debug(
+                    "User %s with Discord ID %s passed corporation check",
+                    user,
+                    user_id,
+                )
+            elif user.profile.main_character.alliance in guild.alliance_access.all():
+                logger.debug(
+                    "User %s with Discord ID %s passed alliance check",
+                    user,
+                    user_id,
+                )
+            elif user.profile.main_character.faction in guild.faction_access.all():
+                logger.debug(
+                    "User %s with Discord ID %s passed faction check",
+                    user,
+                    user_id,
+                )
+            elif user.profile.main_character in guild.character_access.all():
+                logger.debug(
+                    "User %s with Discord ID %s passed character check",
+                    user,
+                    user_id,
+                )
+            else:
+                logger.warning(
+                    "User %s with Discord ID %s attempted to join unauthorized Discord server",
+                    user,
+                    user_id,
+                )
+                return False
 
             if group_names:
                 role_ids = match_or_create_roles_from_names(
