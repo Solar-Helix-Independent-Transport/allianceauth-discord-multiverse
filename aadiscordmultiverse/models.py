@@ -161,6 +161,11 @@ class MultiDiscordUser(models.Model):
         - None if user is no longer a member of the Discord server
         - False on error or raises exception
         """
+        
+        if self.guild.sync_names:
+            logger.info('Not updating nickname for user %s due to guild configuration', self.user)
+            return True
+        
         if not nickname:
             nickname = MultiDiscordUser.objects.user_formatted_nick(
                 self.user, self.guild)
