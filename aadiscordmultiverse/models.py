@@ -162,7 +162,7 @@ class MultiDiscordUser(models.Model):
         - False on error or raises exception
         """
         
-        if self.guild.sync_names:
+        if not self.guild.sync_names:
             logger.info('Not updating nickname for user %s due to guild configuration', self.user)
             return True
         
