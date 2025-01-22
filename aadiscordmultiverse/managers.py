@@ -118,7 +118,7 @@ class DiscordManagedServerManager(models.Manager):
 
     def visible_to(self, user):
         return self.get_queryset().visible_to(user)
-
+        
 
 class MultiDiscordUserManager(models.Manager):
     """Manager for MultiDiscordUser"""

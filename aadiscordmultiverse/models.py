@@ -1,5 +1,6 @@
 from collections import defaultdict
 import logging
+from typing import Union
 
 from allianceauth.authentication.models import State
 from allianceauth.eveonline.models import (EveAllianceInfo, EveCharacter,
@@ -107,6 +108,23 @@ class DiscordManagedServer(models.Model):
 
     def __str__(self):
         return f"{self.guild_id}: {self.server_name}"
+    
+    @classmethod
+    def user_can_access_guild(cls, user: User, guild: Union[int, 'DiscordManagedServer']) -> bool:
+        """Check if a user can access a guild
+
+        Params:
+        - user: User object 
+        - guild: Guild model or guild_id
+        
+        Returns:
+        - True if they have access
+        """
+
+        guild_id = guild
+        if isinstance(guild, DiscordManagedServer):
+            guild_id = guild.guild_id
+        return guild_id in cls.objects.get_queryset().visible_to(user).values_list("guild_id", flat=True)
 
 class MultiDiscordUser(models.Model):
     guild = models.ForeignKey(

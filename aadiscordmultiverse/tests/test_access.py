@@ -241,3 +241,42 @@ class TestAccessPerms(TestCase):
             DiscordManagedServer.objects.visible_to(self.user3).count(), 0)
         self.assertEqual(
             DiscordManagedServer.objects.visible_to(self.user4).count(), 0)
+
+
+    def test_can_access_func_u1(self):
+        member = State.objects.get(name="Member")
+        member.permissions.add(self.access_perm)
+        member.member_characters.add(self.char1)  # main u1
+        member.member_characters.add(self.char9)  # alt u4
+
+        self.user1.refresh_from_db()
+        self.user4.refresh_from_db()
+
+        self.server_2_with_perms.state_access.add(member)
+
+        self.assertTrue(
+            DiscordManagedServer.user_can_access_guild(self.user1, self.server_2_with_perms)
+        )
+        self.assertFalse(
+            DiscordManagedServer.user_can_access_guild(self.user1, self.server_1_no_perms_at_all)
+        )
+
+
+    def test_can_access_func_u1_guild(self):
+        member = State.objects.get(name="Member")
+        member.permissions.add(self.access_perm)
+        member.member_characters.add(self.char1)  # main u1
+        member.member_characters.add(self.char9)  # alt u4
+
+        self.user1.refresh_from_db()
+        self.user4.refresh_from_db()
+
+        self.server_2_with_perms.state_access.add(member)
+
+        self.assertTrue(
+            DiscordManagedServer.user_can_access_guild(self.user1, self.server_2_with_perms.guild_id)
+        )
+        self.assertFalse(
+            DiscordManagedServer.user_can_access_guild(self.user1, self.server_1_no_perms_at_all.guild_id)
+        )
+

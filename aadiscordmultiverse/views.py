@@ -73,6 +73,15 @@ def reset_discord(request, guild_id):
 @login_required
 @permission_required(ACCESS_PERM)
 def activate_discord(request, guild_id):
+    if not DiscordManagedServer.user_can_access_guild(request.user, guild_id):
+        messages.error(
+            request,
+            _(
+                'You do not have permission to access this server.'
+            )
+        )
+        return redirect("services:services")
+
     logger.debug("activate_discordmv called by user %s", request.user)
     return redirect(MultiDiscordUser.objects.generate_oauth_redirect_url(guild_id))
 
@@ -95,9 +104,17 @@ def discord_callback(request):
             "Did not receive state %s", request.user
         )
         success = False
-    else:  # TODO Checck perms first.
         guild_id = state
-        guild = DiscordManagedServer.objects.get(guild_id=guild_id)
+        
+        if not DiscordManagedServer.user_can_access_guild(request.user, guild_id):
+            messages.error(
+                request,
+                _(
+                    'You do not have permission to access this server.'
+                )
+            )
+            return redirect("services:services")
+        
         if MultiDiscordUser.objects.add_user(
             user=request.user,
             authorization_code=authorization_code,
