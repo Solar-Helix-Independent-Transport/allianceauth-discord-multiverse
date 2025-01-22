@@ -57,32 +57,35 @@ class MultiDiscordService(ServicesHook):
             )
 
     def render_services_ctrl(self, request):
-        if self.user_has_account(request.user):
-            user_has_account = True
-            server_user = MultiDiscordUser.objects.get(
-                user=request.user, guild_id=self.guild_id)
-            username = server_user.username
-            discord_username = f'@{username}'
-        else:
-            discord_username = ''
-            user_has_account = False
+        if DiscordManagedServer.user_can_access_guild(request.user, self.guild_id):
+            if self.user_has_account(request.user):
+                user_has_account = True
+                server_user = MultiDiscordUser.objects.get(
+                    user=request.user, guild_id=self.guild_id)
+                username = server_user.username
+                discord_username = f'@{username}'
+            else:
+                discord_username = ''
+                user_has_account = False
 
-        return render_to_string(
-            self.service_ctrl_template,
-            {
-                'server_name': MultiDiscordUser.objects.server_name(self.guild_id),
-                "guild_id": self.guild_id,
-                'user_has_account': user_has_account,
-                'discord_username': discord_username
-            },
-            request=request
-        )
+            return render_to_string(
+                self.service_ctrl_template,
+                {
+                    'server_name': MultiDiscordUser.objects.server_name(self.guild_id),
+                    "guild_id": self.guild_id,
+                    'user_has_account': user_has_account,
+                    'discord_username': discord_username
+                },
+                request=request
+            )
+        else:
+            return ""
 
     def service_active_for_user(self, user):
         has_perms = DiscordManagedServer.objects.visible_to(
-            user).filter(guild_id=self.guild_id).exists()
-        logger.debug(
-            f"User {user} has {self.guild_id} permission: {has_perms}")
+            user
+        ).filter(guild_id=self.guild_id).exists()
+        logger.info(f"User {user} has {self.guild_id} permission: {has_perms}")
         return has_perms
 
     def sync_nickname(self, user):

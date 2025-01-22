@@ -341,6 +341,8 @@ class MultiDiscordUserManager(models.Manager):
 
         return server_name
 
+    # This isnt't used i believe...
+
     # @classmethod
     # def group_to_role(cls, gid, group: Group) -> dict:
     #     """returns the Discord role matching the given Django group by name
