@@ -277,6 +277,7 @@ def update_all(guild_id) -> None:
         'Starting to bulk update all for %s Discord users', discord_users_qs.count()
     )
     update_all_chain = list()
+    update_all_chain.append(check_all_users.si())
     for discord_user in discord_users_qs:
         update_all_chain.append(update_groups.si(
             guild.guild_id, discord_user.user.pk))
@@ -287,3 +288,20 @@ def update_all(guild_id) -> None:
                 guild.guild_id, discord_user.user.pk))
 
     chain(update_all_chain).apply_async(priority=BULK_TASK_PRIORITY)
+
+
+@shared_task
+def check_all_users():
+    """
+        Check all discord users still have valid access
+    """
+    for du in MultiDiscordUser.objects.all():
+        if not DiscordManagedServer.user_can_access_guild(du.user, du.guild):
+            logger.warning(f"DMV: User Lost Permissions - {du.user} no longer has permissions for {du.guild}")
+            try:
+                delete_user(
+                    du.guild.guild_id,
+                    du.user.pk
+                )
+            except Exception as e:
+                logger.exception(f"DMV: Unable to remove user {du.user}. Error: {e}")
