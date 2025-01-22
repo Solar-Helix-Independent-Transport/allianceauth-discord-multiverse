@@ -304,4 +304,8 @@ def check_all_users():
                     du.user.pk
                 )
             except Exception as e:
-                logger.exception(f"DMV: Unable to remove user {du.user}. Error: {e}")
+                logger.exception(f"DMV: Unable to remove user {du.user}. Error: {e}, attempting again asynchronously.")
+                delete_user.delay(
+                    du.guild.guild_id,
+                    du.user.pk
+                )
