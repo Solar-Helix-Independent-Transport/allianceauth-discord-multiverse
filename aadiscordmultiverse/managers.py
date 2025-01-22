@@ -58,31 +58,40 @@ class DiscordManagedServerQuerySet(models.QuerySet):
                 )
             )
             # Corp access
-            queries.append(
-                models.Q(
-                    corporation_access=EveCorporationInfo.objects.get(
-                        corporation_id=main_character.corporation_id
+            try:
+                queries.append(
+                    models.Q(
+                        corporation_access=EveCorporationInfo.objects.get(
+                            corporation_id=main_character.corporation_id
+                        )
                     )
                 )
-            )
+            except EveCorporationInfo.DoesNotExist:
+                pass
             # Alliance access if part of an alliance
-            if main_character.alliance_id:
-                queries.append(
-                    models.Q(
-                        alliance_access=EveAllianceInfo.objects.get(
-                            alliance_id=main_character.alliance_id
+            try:
+                if main_character.alliance_id:
+                    queries.append(
+                        models.Q(
+                            alliance_access=EveAllianceInfo.objects.get(
+                                alliance_id=main_character.alliance_id
+                            )
                         )
                     )
-                )
+            except EveAllianceInfo.DoesNotExist:
+                pass
             # Faction access if part of a faction
-            if main_character.faction_id:
-                queries.append(
-                    models.Q(
-                        faction_access=EveFactionInfo.objects.get(
-                            faction_id=main_character.faction_id
+            try:
+                if main_character.faction_id:
+                    queries.append(
+                        models.Q(
+                            faction_access=EveFactionInfo.objects.get(
+                                faction_id=main_character.faction_id
+                            )
                         )
                     )
-                )
+            except EveFactionInfo.DoesNotExist:
+                pass
 
             logger.debug(
                 f"{len(queries)} queries for {main_character}'s visible characters.")
