@@ -1,8 +1,9 @@
 from unittest import TestCase
 
-from ..exceptions import (DiscordApiBackoff, DiscordClientException,
-                          DiscordRateLimitExhausted,
-                          DiscordTooManyRequestsError)
+from ..exceptions import (
+    DiscordApiBackoff, DiscordClientException, DiscordRateLimitExhausted,
+    DiscordTooManyRequestsError,
+)
 
 
 class TestExceptions(TestCase):

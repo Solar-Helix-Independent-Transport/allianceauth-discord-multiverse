@@ -1,4 +1,5 @@
 import logging
+
 from django.apps import AppConfig
 
 from . import __branch__, __version__

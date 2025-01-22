@@ -1,9 +1,12 @@
-from allianceauth.authentication.models import CharacterOwnership, State
-from allianceauth.eveonline.models import (EveAllianceInfo, EveCharacter,
-                                           EveCorporationInfo)
-from allianceauth.tests.auth_utils import AuthUtils
 from django.contrib.auth.models import Permission
 from django.test import TestCase
+
+from allianceauth.authentication.models import CharacterOwnership, State
+from allianceauth.eveonline.models import (
+    EveAllianceInfo, EveCharacter, EveCorporationInfo,
+)
+from allianceauth.tests.auth_utils import AuthUtils
+
 from ..models import DiscordManagedServer
 
 
@@ -279,4 +282,3 @@ class TestAccessPerms(TestCase):
         self.assertFalse(
             DiscordManagedServer.user_can_access_guild(self.user1, self.server_1_no_perms_at_all.guild_id)
         )
-

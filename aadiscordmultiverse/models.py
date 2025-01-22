@@ -1,16 +1,19 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from typing import Union
 
-from allianceauth.authentication.models import State
-from allianceauth.eveonline.models import (EveAllianceInfo, EveCharacter,
-                                           EveCorporationInfo, EveFactionInfo)
-from allianceauth.groupmanagement.models import ReservedGroupName
-from allianceauth.notifications import notify
+from requests.exceptions import HTTPError
+
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.translation import gettext_lazy
-from requests.exceptions import HTTPError
+
+from allianceauth.authentication.models import State
+from allianceauth.eveonline.models import (
+    EveAllianceInfo, EveCharacter, EveCorporationInfo, EveFactionInfo,
+)
+from allianceauth.groupmanagement.models import ReservedGroupName
+from allianceauth.notifications import notify
 
 from .discord_client import DiscordApiBackoff, DiscordClient, DiscordRoles
 from .discord_client.helpers import match_or_create_roles_from_names
@@ -108,15 +111,15 @@ class DiscordManagedServer(models.Model):
 
     def __str__(self):
         return f"{self.guild_id}: {self.server_name}"
-    
+
     @classmethod
     def user_can_access_guild(cls, user: User, guild: Union[int, 'DiscordManagedServer']) -> bool:
         """Check if a user can access a guild
 
         Params:
-        - user: User object 
+        - user: User object
         - guild: Guild model or guild_id
-        
+
         Returns:
         - True if they have access
         """
@@ -179,11 +182,11 @@ class MultiDiscordUser(models.Model):
         - None if user is no longer a member of the Discord server
         - False on error or raises exception
         """
-        
+
         if not self.guild.sync_names:
             logger.info('Not updating nickname for user %s due to guild configuration', self.user)
             return True
-        
+
         if not nickname:
             nickname = MultiDiscordUser.objects.user_formatted_nick(
                 self.user, self.guild)
@@ -421,4 +424,3 @@ class ServerActiveFilter(FilterBase):
                 "message": "Active", "check": not logic
             }
         return output
-

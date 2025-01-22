@@ -4,18 +4,21 @@ from unittest.mock import MagicMock, patch
 
 import requests
 import requests_mock
-from allianceauth import __title__ as AUTH_TITLE
-from allianceauth import __url__, __version__
 from redis import Redis
 from requests.exceptions import HTTPError
 
+from allianceauth import __title__ as AUTH_TITLE, __url__, __version__
+
 from ...utils import set_logger_to_file
-from ..client import (DEFAULT_BACKOFF_DELAY, DURATION_CONTINGENCY,
-                      DiscordClient, DiscordRoles)
+from ..client import (
+    DEFAULT_BACKOFF_DELAY, DURATION_CONTINGENCY, DiscordClient, DiscordRoles,
+)
 from ..exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
-from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, TEST_BOT_TOKEN,
-               TEST_GUILD_ID, TEST_ROLE_ID, TEST_USER_ID, TEST_USER_NAME,
-               create_matched_role, create_role, create_user_info)
+from . import (
+    ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, TEST_BOT_TOKEN, TEST_GUILD_ID,
+    TEST_ROLE_ID, TEST_USER_ID, TEST_USER_NAME, create_matched_role,
+    create_role, create_user_info,
+)
 
 logger = set_logger_to_file(
     'aadiscordmultiverse.discord_client.client', __file__

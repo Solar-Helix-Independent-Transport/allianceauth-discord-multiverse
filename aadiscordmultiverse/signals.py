@@ -1,6 +1,7 @@
-from allianceauth.services.hooks import get_extension_logger
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
+
+from allianceauth.services.hooks import get_extension_logger
 
 from .models import DiscordManagedServer
 from .tasks import update_all

@@ -6,17 +6,17 @@ from urllib.parse import urljoin
 from uuid import uuid1
 
 import requests
-from allianceauth import __title__ as AUTH_TITLE
-from allianceauth import __url__, __version__
 from django_redis import get_redis_connection
 from redis import Redis
 
-from .app_settings import (DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
-                           DISCORD_API_TIMEOUT_READ,
-                           DISCORD_DISABLE_ROLE_CREATION,
-                           DISCORD_GUILD_NAME_CACHE_MAX_AGE,
-                           DISCORD_OAUTH_BASE_URL, DISCORD_OAUTH_TOKEN_URL,
-                           DISCORD_ROLES_CACHE_MAX_AGE)
+from allianceauth import __title__ as AUTH_TITLE, __url__, __version__
+
+from .app_settings import (
+    DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
+    DISCORD_API_TIMEOUT_READ, DISCORD_DISABLE_ROLE_CREATION,
+    DISCORD_GUILD_NAME_CACHE_MAX_AGE, DISCORD_OAUTH_BASE_URL,
+    DISCORD_OAUTH_TOKEN_URL, DISCORD_ROLES_CACHE_MAX_AGE,
+)
 from .exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
 from .helpers import DiscordRoles
 

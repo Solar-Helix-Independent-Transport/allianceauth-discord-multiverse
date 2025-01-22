@@ -1,13 +1,15 @@
 import logging
 
-from allianceauth import hooks
-from allianceauth.services.hooks import ServicesHook, UrlHook
+from pytz import AmbiguousTimeError
+
 from django.contrib.auth.models import User
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.template import TemplateDoesNotExist
 from django.template.loader import get_template, render_to_string
-from pytz import AmbiguousTimeError
+
+from allianceauth import hooks
+from allianceauth.services.hooks import ServicesHook, UrlHook
 
 from . import tasks, urls
 from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
@@ -37,7 +39,7 @@ class MultiDiscordService(ServicesHook):
 
         template = 'aadiscordmultiverse/dmv_service_ctrl.html'
         try:
-            t = get_template("services/services_ctrl_base.html")
+            get_template("services/services_ctrl_base.html")
             template = 'aadiscordmultiverse/dmv_service_ctrl_bs5.html'
         except TemplateDoesNotExist:
             pass

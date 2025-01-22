@@ -1,12 +1,13 @@
 import logging
 
-from allianceauth.services.views import superuser_test
 from django.contrib import messages
-from django.contrib.auth.decorators import (login_required,
-                                            permission_required,
-                                            user_passes_test)
+from django.contrib.auth.decorators import (
+    login_required, permission_required, user_passes_test,
+)
 from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
+
+from allianceauth.services.views import superuser_test
 
 from .models import DiscordManagedServer, MultiDiscordUser
 
@@ -105,7 +106,7 @@ def discord_callback(request):
         )
         success = False
         guild_id = state
-        
+
         if not DiscordManagedServer.user_can_access_guild(request.user, guild_id):
             messages.error(
                 request,
@@ -114,7 +115,7 @@ def discord_callback(request):
                 )
             )
             return redirect("services:services")
-        
+
         if MultiDiscordUser.objects.add_user(
             user=request.user,
             authorization_code=authorization_code,

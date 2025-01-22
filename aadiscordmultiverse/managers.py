@@ -1,21 +1,27 @@
 import logging
 from urllib.parse import urlencode
 
-from allianceauth.eveonline.models import (EveAllianceInfo, EveCorporationInfo,
-                                           EveFactionInfo)
-from allianceauth.services.hooks import NameFormatter
+from requests.exceptions import HTTPError
+from requests_oauthlib import OAuth2Session
+
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.timezone import now
-from requests.exceptions import HTTPError
-from requests_oauthlib import OAuth2Session
 
-from .app_settings import (DISCORD_APP_ID, DISCORD_APP_SECRET,
-                           DISCORD_BOT_TOKEN, DISCORD_CALLBACK_URL)
+from allianceauth.eveonline.models import (
+    EveAllianceInfo, EveCorporationInfo, EveFactionInfo,
+)
+from allianceauth.services.hooks import NameFormatter
+
+from .app_settings import (
+    DISCORD_APP_ID, DISCORD_APP_SECRET, DISCORD_BOT_TOKEN,
+    DISCORD_CALLBACK_URL,
+)
 from .discord_client import DiscordClient
-from .discord_client.exceptions import (DiscordApiBackoff,
-                                        DiscordClientException)
+from .discord_client.exceptions import (
+    DiscordApiBackoff, DiscordClientException,
+)
 from .discord_client.helpers import match_or_create_roles_from_names
 
 logger = logging.getLogger(__name__)
@@ -118,7 +124,7 @@ class DiscordManagedServerManager(models.Manager):
 
     def visible_to(self, user):
         return self.get_queryset().visible_to(user)
-        
+
 
 class MultiDiscordUserManager(models.Manager):
     """Manager for MultiDiscordUser"""

@@ -1,8 +1,10 @@
 from unittest import TestCase
 
 from .. import DiscordRoles
-from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_CHARLIE_2,
-               ROLE_MIKE, create_role)
+from . import (
+    ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_CHARLIE_2, ROLE_MIKE,
+    create_role,
+)
 
 MODULE_PATH = 'aadiscordmultiverse.discord_client.client'
 
