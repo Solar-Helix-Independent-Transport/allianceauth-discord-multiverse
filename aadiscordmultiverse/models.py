@@ -127,7 +127,7 @@ class DiscordManagedServer(models.Model):
         guild_id = guild
         if isinstance(guild, DiscordManagedServer):
             guild_id = guild.guild_id
-        return int(guild_id) in cls.objects.get_queryset().visible_to(user).values_list("guild_id", flat=True)
+        return cls.objects.get_queryset().visible_to(user).filter(guild_id=int(guild_id)).exists()
 
 class MultiDiscordUser(models.Model):
     guild = models.ForeignKey(
