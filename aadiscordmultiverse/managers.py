@@ -341,14 +341,14 @@ class MultiDiscordUserManager(models.Manager):
 
         return server_name
 
-    @classmethod
-    def group_to_role(cls, group: Group) -> dict:
-        """returns the Discord role matching the given Django group by name
-        or an empty dict() if no matching role exist
-        """
-        return cls._bot_client().match_role_from_name(
-            guild_id=self.guild_id, role_name=group.name
-        )
+    # @classmethod
+    # def group_to_role(cls, gid, group: Group) -> dict:
+    #     """returns the Discord role matching the given Django group by name
+    #     or an empty dict() if no matching role exist
+    #     """
+    #     return cls._bot_client().match_role_from_name(
+    #         guild_id=gid, role_name=group.name
+    #     )
 
     @staticmethod
     def _bot_client(is_rate_limited: bool = True) -> DiscordClient:

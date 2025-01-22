@@ -95,6 +95,9 @@ def discord_callback(request):
     )
     authorization_code = request.GET.get('code', None)
     state = request.GET.get('state', None)
+
+    success = False
+
     if not authorization_code:
         logger.warning(
             "Did not receive OAuth code from callback for user %s", request.user
@@ -105,9 +108,11 @@ def discord_callback(request):
             "Did not receive state %s", request.user
         )
         success = False
+    else:
         guild_id = state
+        guild = DiscordManagedServer.objects.get(guild_id=guild_id)
 
-        if not DiscordManagedServer.user_can_access_guild(request.user, guild_id):
+        if not DiscordManagedServer.user_can_access_guild(request.user, guild):
             messages.error(
                 request,
                 _(
