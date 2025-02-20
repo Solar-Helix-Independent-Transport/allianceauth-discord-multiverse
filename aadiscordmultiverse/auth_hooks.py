@@ -157,30 +157,44 @@ class MultiDiscordService(ServicesHook):
 
 
 def add_del_callback(*args, **kwargs):
+    """
+        This works great at startup of auth, however has a bug where changes
+        made during operation are only captured on a single thread.
+        TLDR restart auth after adding a new server
+    """
+    # Get a list of all guild ID's to check in our hook list
     guild_add = list(DiscordManagedServer.objects.all(
     ).values_list("guild_id", flat=True))
+    # Spit out the ID's for troubleshooting
     logger.info(f"Processing Guilds {guild_add}")
 
-    # Loop all services and look for our hooks
+    # Loop all services and look for our specific hook classes
     for h in hooks._hooks.get("services_hook", []):
         if isinstance(h(), MultiDiscordService):
+            # This is our hook
+            # h is an instanced MultiDiscordService hook with a guild_id
             if h.guild_id in guild_add:
+                # this is a known discord ID so remove it from our list of knowns
                 guild_add.remove(h.guild_id)
             else:
-                # this one was deleted remove it
+                # This one was deleted remove the hook.
                 del (h)
 
+    # Loop to setup what is mising ( or everyhting on first boot )
     for gid in guild_add:
+        # What guild_id
         logger.info(f"Adding GUILD ID {gid}")
         guild = DiscordManagedServer.objects.get(guild_id=gid)
+        # This is the magic to instance the hook class with a new Class Name
+        # this way there are no conflicts at runtime
         guild_class = type(
-            f"MultiDiscordService{gid}",
-            (MultiDiscordService,), {},
-            gid=guild.guild_id,
-            guild_name=guild.server_name
+            f"MultiDiscordService{gid}", # New class name
+            (MultiDiscordService,), {}, # Super class
+            gid=guild.guild_id, # set the guild_id
+            guild_name=guild.server_name # and server name
         )
+        # This adds the hook to the services_hook group to be loaded when needed.
         hooks.register("services_hook", guild_class)
-
 
 post_save.connect(add_del_callback, sender=DiscordManagedServer)
 post_delete.connect(add_del_callback, sender=DiscordManagedServer)
