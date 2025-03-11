@@ -184,6 +184,11 @@ class MultiDiscordUserManager(models.Manager):
             else:
                 role_ids = None
 
+            logger.info(f"DMV DEBUG: group_names = {group_names}")
+            logger.info(f"DMV DEBUG: role_ids = {role_ids}")
+            logger.info(f"DMV DEBUG: discord_user = {discord_user}")
+            logger.info(f"DMV DEBUG: user_id = {user_id}")
+
             created = bot_client.add_guild_member(
                 guild_id=guild.guild_id,
                 user_id=user_id,
@@ -246,6 +251,7 @@ class MultiDiscordUserManager(models.Manager):
             logger.exception(
                 'Failed to add user %s to Discord server: %s', user, ex
             )
+            logger.error(f"DMV DEBUG: {vars(ex)}")
             return False
 
     @staticmethod
