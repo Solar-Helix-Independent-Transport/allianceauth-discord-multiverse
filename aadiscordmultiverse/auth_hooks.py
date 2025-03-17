@@ -13,7 +13,6 @@ from allianceauth.services.hooks import ServicesHook, UrlHook
 
 from . import tasks, urls
 from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
-from .urls import urlpatterns
 from .utils import LoggerAddTag
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,6 @@ class MultiDiscordService(ServicesHook):
 
     def __init__(self):
         ServicesHook.__init__(self)
-        self.urlpatterns = urlpatterns
         if hasattr(self, "guild_id"):
             self.name = f'dmv:{self.guild_name if self.guild_name else self.guild_id}'
         else:
@@ -198,6 +196,10 @@ def add_del_callback(*args, **kwargs):
 
 post_save.connect(add_del_callback, sender=DiscordManagedServer)
 post_delete.connect(add_del_callback, sender=DiscordManagedServer)
+
+@hooks.register("url_hook")
+def register_urls():
+    return UrlHook(urls, "dmv", r"^dmv/")
 
 @hooks.register("secure_group_filters")
 def filters():
