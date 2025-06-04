@@ -75,22 +75,21 @@ def delete_user(self, guild_id: int, user_pk: int, notify_user: bool = False) ->
 
 def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **kwargs) -> None:
     """perform a user related action incl. managing all exceptions"""
-    logger.debug("Starting %s for user with pk %s", method, user_pk)
+    logger.info("Starting %s for user with pk %s on guild id %s", method, user_pk, guild_id)
     user = User.objects.get(pk=user_pk)
-    # logger.debug("user %s has state %s", user, user.profile.state)
-
     if MultiDiscordUser.objects.user_has_account(user, guild_id):
         discord_user = MultiDiscordUser.objects.get(
             user=user, guild_id=guild_id)
-        logger.info("Running %s for user %s", method, user)
+        logger.info("Running %s for user %s on guild %s", method, user, guild_id)
         try:
             success = getattr(discord_user, method)(**kwargs)
 
         except DiscordApiBackoff as bo:
             logger.info(
-                "API back off for %s wth user %s due to %r, retrying in %s seconds",
+                "API back off for %s wth user %s on guild %s due to %r, retrying in %s seconds",
                 method,
                 user,
+                guild_id,
                 bo,
                 bo.retry_after_seconds
             )
@@ -101,7 +100,7 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
 
         except (HTTPError, ConnectionError):
             logger.warning(
-                '%s failed for user %s, retrying in %d secs',
+                '%s failed for user %s on guild %s, retrying in %d secs',
                 method,
                 user,
                 DISCORD_TASKS_RETRY_PAUSE,
@@ -114,13 +113,15 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
                     '%s failed for user %s after max retries',
                     method,
                     user,
+                    guild_id,
                     exc_info=True
                 )
         except Exception:
             logger.error(
-                '%s for user %s failed due to unexpected exception',
+                '%s for user %s on guild %s failed due to unexpected exception',
                 method,
                 user,
+                guild_id,
                 exc_info=True
             )
 
@@ -130,7 +131,7 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
 
     else:
         logger.debug(
-            'User %s does not have a discord account, skipping %s', user, method
+            'User %s does not have a guild %s discord account, skipping %s', user, guild_id, method
         )
 
 
