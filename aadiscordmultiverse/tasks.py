@@ -138,7 +138,9 @@ def _task_perform_user_action(self, guild_id: int, user_pk: int, method: str, **
 @shared_task()
 def update_all_groups(guild_id) -> None:
     """Update roles for all known users with a Discord account."""
-    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
+    discord_users_qs = MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related("user", "guild")
     _bulk_update_groups_for_users(discord_users_qs)
 
 
@@ -147,7 +149,7 @@ def update_groups_bulk(user_pks: list) -> None:
     """Update roles for list of users with a Discord account in bulk."""
     discord_users_qs = MultiDiscordUser.objects\
         .filter(user__pk__in=user_pks)\
-        .select_related()
+        .select_related("user", "guild")
     _bulk_update_groups_for_users(discord_users_qs)
 
 
@@ -157,7 +159,7 @@ def _bulk_update_groups_for_users(discord_users_qs: QuerySet) -> None:
     )
     update_groups_chain = list()
     for discord_user in discord_users_qs:
-        update_groups_chain.append(update_groups.si(discord_user.user.pk))
+        update_groups_chain.append(update_groups.si(discord_user.guild_id, discord_user.user.pk))
 
     chain(update_groups_chain).apply_async(priority=BULK_TASK_PRIORITY)
 
@@ -165,7 +167,12 @@ def _bulk_update_groups_for_users(discord_users_qs: QuerySet) -> None:
 @shared_task()
 def update_all_nicknames(guild_id) -> None:
     """Update nicknames for all known users with a Discord account."""
-    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
+    discord_users_qs = MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related(
+        "user",
+        "guild"
+    )
     _bulk_update_nicknames_for_users(discord_users_qs)
 
 
@@ -174,7 +181,7 @@ def update_nicknames_bulk(user_pks: list) -> None:
     """Update nicknames for list of users with a Discord account in bulk."""
     discord_users_qs = MultiDiscordUser.objects\
         .filter(user__pk__in=user_pks)\
-        .select_related()
+        .select_related("user", "guild")
     _bulk_update_nicknames_for_users(discord_users_qs)
 
 
@@ -185,7 +192,7 @@ def _bulk_update_nicknames_for_users(discord_users_qs: QuerySet) -> None:
     )
     update_nicknames_chain = list()
     for discord_user in discord_users_qs:
-        update_nicknames_chain.append(update_nickname.si(discord_user.user.pk))
+        update_nicknames_chain.append(update_nickname.si(discord_user.guild_id, discord_user.user.pk))
 
     chain(update_nicknames_chain).apply_async(priority=BULK_TASK_PRIORITY)
 
