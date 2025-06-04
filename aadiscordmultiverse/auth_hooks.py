@@ -121,8 +121,8 @@ class MultiDiscordService(ServicesHook):
         logger.debug('Processing %s groups for %s', self.name, user)
         if self.user_has_account(user):
             tasks.update_groups.apply_async(
-                args=[self.guild_id, ],
                 kwargs={
+                    'guild_id': self.guild_id,
                     'user_pk': user.pk,
                     # since state changes may not yet be in the DB we need to
                     # provide the new state name manually to the task
