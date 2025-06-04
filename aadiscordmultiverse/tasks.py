@@ -272,7 +272,9 @@ def _bulk_update_usernames_for_users(discord_users_qs: QuerySet) -> None:
 @shared_task()
 def update_all(guild_id) -> None:
     """Updates groups and nicknames (when activated) for all users."""
-    discord_users_qs = MultiDiscordUser.objects.filter(guild_id=guild_id)
+    discord_users_qs = MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related("user")
     guild = DiscordManagedServer.objects.get(guild_id=guild_id)
     logger.info(
         'Starting to bulk update all for %s Discord users', discord_users_qs.count()
