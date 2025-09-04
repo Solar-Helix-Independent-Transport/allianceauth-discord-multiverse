@@ -30,8 +30,13 @@ def update_groups(self, guild_id: int, user_pk: int, state_name: str = None) -> 
     - user_pk: PK of given user
     - state_name: optional state name to be used
     """
-    _task_perform_user_action(self, guild_id, user_pk,
-                              'update_groups', state_name=state_name)
+    _task_perform_user_action(
+        self,
+        guild_id,
+        user_pk,
+        'update_groups',
+        state_name=state_name
+    )
 
 
 @shared_task(
@@ -306,6 +311,75 @@ def check_all_users():
         Check all discord users still have valid access
     """
     for du in MultiDiscordUser.objects.all():
+        if not DiscordManagedServer.user_can_access_guild(du.user, du.guild):
+            logger.warning(f"DMV: User Lost Permissions - {du.user} no longer has permissions for {du.guild}")
+            try:
+                delete_user(
+                    du.guild.guild_id,
+                    du.user.pk
+                )
+            except Exception as e:
+                logger.exception(f"DMV: Unable to remove user {du.user}. Error: {e}, attempting again asynchronously.")
+                delete_user.delay(
+                    du.guild.guild_id,
+                    du.user.pk
+                )
+
+
+@shared_task
+def update_all_guild_user_groups(guild_id: int):
+    """
+        Update any users that need group updates.
+    """
+    for du in MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related(
+        "user",
+        "guild"
+    ):
+        update_groups.delay(du.guild.guild_id, du.user.pk)
+
+
+@shared_task
+def update_all_guild_user_nicks(guild_id: int):
+    """
+        Update any users that need group updates.
+    """
+    for du in MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related(
+        "user",
+        "guild"
+    ):
+        update_nickname.delay(du.guild.guild_id, du.user.pk)
+
+
+@shared_task
+def update_all_guild_users_with_groups(guild_id: int, group_pks: list):
+    """
+        Update any users that need group updates.
+    """
+    for du in MultiDiscordUser.objects.filter(
+        user__groups__pk__in=group_pks,
+        guild_id=guild_id
+    ).select_related(
+        "user",
+        "guild"
+    ):
+        update_groups.delay(du.guild.guild_id, du.user.pk)
+
+
+@shared_task
+def check_all_users_in_guild(guild_id: int):
+    """
+        Check all discord users still have valid access
+    """
+    for du in MultiDiscordUser.objects.filter(
+        guild_id=guild_id
+    ).select_related(
+        "user",
+        "guild"
+    ):
         if not DiscordManagedServer.user_can_access_guild(du.user, du.guild):
             logger.warning(f"DMV: User Lost Permissions - {du.user} no longer has permissions for {du.guild}")
             try:
