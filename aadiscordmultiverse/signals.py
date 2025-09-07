@@ -23,18 +23,22 @@ def new_groups(sender, instance, action, reverse, model, pk_set, **kwargs):
 
 @receiver(pre_save, sender=DiscordManagedServer)
 def model_update(sender, instance, raw, using, update_fields, **kwargs):
-    old = sender.objects.get(pk = instance.pk)
-    # update when the "Managed Groups" option is changed on or off
-    if not instance.include_all_managed_groups == old.include_all_managed_groups:
-        update_all_guild_user_groups(
-            instance.guild_id,
-        )
+    try:
+        old = sender.objects.get(pk = instance.pk)
+        # update when the "Managed Groups" option is changed on or off
+        if not instance.include_all_managed_groups == old.include_all_managed_groups:
+            update_all_guild_user_groups(
+                instance.guild_id,
+            )
 
-    # update when the "Sync Names" option is changed to on
-    if instance.sync_names and not old.sync_names:
-        update_all_guild_user_nicks(
-            instance.guild_id,
-        )
+        # update when the "Sync Names" option is changed to on
+        if instance.sync_names and not old.sync_names:
+            update_all_guild_user_nicks(
+                instance.guild_id,
+            )
+    except DiscordManagedServer.DoesNotExist:
+        # new create
+        pass
 
 
 def perms_change(sender, instance, action, reverse, model, pk_set, **kwargs):
