@@ -47,9 +47,9 @@ optional-dependencies.test = [
     "allianceauth-securegroups",
     "requests-mock",
 ]
-urls.Homepage = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multivers"
-urls.Source = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multiverss"
-urls.Tracker = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multivers/issues"
+urls.Homepage = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multiverse"
+urls.Source = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multiverse"
+urls.Tracker = "https://github.com/Solar-Helix-Independent-Transport/allianceauth-discord-multiverse/issues"
 
 [tool.flit.module]
 name = "aadiscordmultiverse"
