@@ -17,13 +17,27 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         parser.add_argument(
-            "--skipchecks",
+            "--createserver",
             action="store_true",
-            help="Skip the server already exists checks",
+            help="Create the server if it doesnt already exists",
+        )
+
+        parser.add_argument(
+            "--migrateusers",
+            action="store_true",
+            help="Migrate the discord users to the new server if it exists",
+        )
+
+        parser.add_argument(
+            "--deleteusers",
+            action="store_true",
+            help="Delete old discord users if they have been migrated",
         )
 
     def handle(self, *args, **options):
-        skip_checks = options["skipchecks"]
+        create_server = options["createserver"]
+        migrate_users = options["migrateusers"]
+        delete_users = options["deleteusers"]
         self.stdout.write("Running checks!")
         # discord options
         DISCORD_GUILD_ID = getattr(settings, "DISCORD_GUILD_ID", False)
@@ -32,7 +46,7 @@ class Command(BaseCommand):
         if DISCORD_GUILD_ID:
             self.stdout.write(f"Found Guild ID: {DISCORD_GUILD_ID} - Name Sync: {DISCORD_SYNC_NAMES}")
             servers = DiscordManagedServer.objects.filter(guild_id=DISCORD_GUILD_ID).exists()
-            if not servers:
+            if not servers and create_server:
                 self.stdout.write(f"Creating Guild with ID: {DISCORD_GUILD_ID} - Name Sync: {DISCORD_SYNC_NAMES}")
                 name = f"{SITE_NAME} Discord"
                 perm = Permission.objects.get(codename="access_discord")
@@ -62,31 +76,45 @@ class Command(BaseCommand):
                     for group in groups:
                         group.permissions.add(perm_dmv)
 
-            elif not skip_checks:
-                self.stderr.write("Discord Guild ID already exists. use `--skipchecks` to force the users over.")
-                return
+            else:
+                self.stderr.write("Discord Guild ID already exists, we cant make it again.")
 
-            discord_users = DiscordUser.objects.all()
-            self.stdout.write(f"Starting migration of {discord_users.count()} users")
-            skipped=0
-            for du in discord_users:
-                dmvu = MultiDiscordUser.objects.filter(
-                    guild_id=DISCORD_GUILD_ID,
-                    uid=du.uid
+            if migrate_users:
+                dmv = DiscordManagedServer.objects.get(
+                        guild_id=DISCORD_GUILD_ID
                 )
-                if not dmvu.exists():
-                    MultiDiscordUser.objects.create(
-                        guild=dmv,
-                        user=du.user,
-                        uid=du.uid,
-                        username=du.username,
-                        discriminator=du.discriminator,
-                        activated=du.activated
-                    )
+                discord_users = DiscordUser.objects.all()
+                self.stdout.write(f"Starting migration of {discord_users.count()} users")
+                if delete_users:
+                    self.stdout.write(f"WILL delete the old discord service users")
                 else:
-                    skipped += 1
-                du.delete()
-            self.stdout.write(f"Finished Migration of users, Skipped {skipped} users")
+                    self.stdout.write(f"WILL NOT delete the old discord service users. to do this re-run the script with `--deleteusers`")
+                skipped=0
+                for du in discord_users:
+                    dmvu = MultiDiscordUser.objects.filter(
+                        guild_id=DISCORD_GUILD_ID,
+                        uid=du.uid
+                    )
+                    if not dmvu.exists():
+                        MultiDiscordUser.objects.create(
+                            guild=dmv,
+                            user=du.user,
+                            uid=du.uid,
+                            username=du.username,
+                            discriminator=du.discriminator,
+                            activated=du.activated
+                        )
+                    else:
+                        skipped += 1
+                        if delete_users:
+                            du.delete()
+                    if delete_users:
+                        du.delete()
+                self.stdout.write(f"Finished migration of users, Skipped creation of {skipped} existing users")
+            else:
+                self.stdout.write(f"Skipping users, to migrate users use `--migrateusers`")
         else:
             self.stderr.write("Discord Guild ID not found in settings.")
-        self.stdout.write(f"Completed Migration, you can diable the inbuilt discord service now. Please verify that the configuration is correct from the auth admin interface.")
+
+        self.stdout.write(f"Completed migration, you can diable the inbuilt discord service now.")
+        self.stdout.write(f"Please verify/adjust the configuration from the auth admin interface.")
