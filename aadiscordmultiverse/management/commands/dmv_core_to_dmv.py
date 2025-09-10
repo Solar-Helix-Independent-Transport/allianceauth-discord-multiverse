@@ -31,13 +31,25 @@ class Command(BaseCommand):
         parser.add_argument(
             "--deleteusers",
             action="store_true",
-            help="Delete old discord users if they have been migrated",
+            help="Delete old discord users if they have been migrated. requires --migrateusers",
         )
 
     def handle(self, *args, **options):
         create_server = options["createserver"]
         migrate_users = options["migrateusers"]
         delete_users = options["deleteusers"]
+
+        if not create_server and not migrate_users:
+            self.stderr.write(f"you need to define atleast one option... ")
+            self.stderr.write(f"    --createserver - Create the server if it doesnt already exists")
+            self.stderr.write(f"    --migrateusers - Migrate the discord users to the new server if it exists")
+            self.stderr.write(f"    --deleteusers  - requires --migrateusers - Delete old discord users if they have been migrated")
+            return
+
+        if delete_users and not migrate_users:
+            self.stderr.write(f"    --deleteusers  - requires --migrateusers")
+            return
+
         self.stdout.write("Running checks!")
         # discord options
         DISCORD_GUILD_ID = getattr(settings, "DISCORD_GUILD_ID", False)
