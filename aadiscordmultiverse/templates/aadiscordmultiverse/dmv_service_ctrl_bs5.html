@@ -15,7 +15,7 @@
 
 {% block active %}
     {% if server_name %}
-        <span class="badge {% if user_has_account %}bg-success{% else %}bg-warning{% endif %}">{% if user_has_account %}{% translate "Active" %}{% else %}{% translate "Disabled" %}{% endif %}</span>
+        <span class="badge {% if user_has_account %}bg-success{% else %}bg-warning{% endif %}">{% if user_has_account %}{% translate "Enabled" %}{% else %}{% translate "Disabled" %}{% endif %}</span>
     {% else %}
         <span class="badge bg-danger">{% translate "Unlinked Server" %}</span>
     {% endif %}
