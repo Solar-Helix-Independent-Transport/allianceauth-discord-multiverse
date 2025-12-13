@@ -31,22 +31,28 @@
 
 {% block controls %}
     {% if server_name %}
-        {% if not user_has_account %}
-        <a href="{% url 'dmv:activate' guild_id %}" title="{% translate 'Join the Discord server' %}" class="btn btn-primary">
-            <span class="fas fa-check fa-fw"></span>
-        </a>
+        {% if timeout == False %}
+            {% if not user_has_account %}
+            <a href="{% url 'dmv:activate' guild_id %}" title="{% translate 'Join the Discord server' %}" class="btn btn-primary">
+                <span class="fas fa-check fa-fw"></span>
+            </a>
+            {% else %}
+            <a href="{% url 'dmv:reset' guild_id %}" title="{% translate 'Leave and rejoin the Discord Server (Reset)' %}" class="btn btn-warning">
+                <span class="fas fa-sync fa-fw"></span>
+            </a>
+            <a href="{% url 'dmv:deactivate' guild_id %}" title="{% translate 'Leave the Discord server' %}" class="btn btn-danger">
+                <span class="fas fa-times fa-fw"></span>
+            </a>
+            {% endif %}
         {% else %}
-        <a href="{% url 'dmv:reset' guild_id %}" title="{% translate 'Leave and rejoin the Discord Server (Reset)' %}" class="btn btn-warning">
-            <span class="fas fa-sync fa-fw"></span>
-        </a>
-        <a href="{% url 'dmv:deactivate' guild_id %}" title="{% translate 'Leave the Discord server' %}" class="btn btn-danger">
-            <span class="fas fa-times fa-fw"></span>
-        </a>
+            <span class="badge bg-danger">Rate Limited. Please try again later.</span>
         {% endif %}
     {% endif %}
     {% if request.user.is_superuser %}
-    <a class="btn btn-primary" title="{% translate 'Link Discord Server' %}" href="{% url 'dmv:add_bot' %}">
-        <span class="fas fa-link fa-fw"></span>
-    </a>
+        {% if timeout == False %}
+            <a class="btn btn-primary" title="{% translate 'Link Discord Server' %}" href="{% url 'dmv:add_bot' %}">
+                <span class="fas fa-link fa-fw"></span>
+            </a>
+        {% endif %}
     {% endif %}
 {% endblock %}

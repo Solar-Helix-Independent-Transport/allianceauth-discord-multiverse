@@ -11,6 +11,11 @@ from django.template.loader import get_template, render_to_string
 from allianceauth import hooks
 from allianceauth.services.hooks import ServicesHook, UrlHook
 
+from aadiscordmultiverse.discord_client.client import DiscordClient
+from aadiscordmultiverse.discord_client.exceptions import (
+    DiscordTooManyRequestsError,
+)
+
 from . import tasks, urls
 from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
 from .utils import LoggerAddTag
@@ -44,6 +49,7 @@ class MultiDiscordService(ServicesHook):
         self.service_ctrl_template = template
         self.access_perm = 'aadiscordmultiverse.access_discord_multiverse'
         self.name_format = '{character_name}'
+        self.client = MultiDiscordUser.objects._bot_client()
 
     def delete_user(self, user: User, notify_user: bool = False) -> None:
         if self.user_has_account(user):
@@ -56,6 +62,7 @@ class MultiDiscordService(ServicesHook):
 
     def render_services_ctrl(self, request):
         if DiscordManagedServer.user_can_access_guild(request.user, self.guild_id):
+            timeout = False
             if self.user_has_account(request.user):
                 user_has_account = True
                 server_user = MultiDiscordUser.objects.get(
@@ -66,13 +73,19 @@ class MultiDiscordService(ServicesHook):
                 discord_username = ''
                 user_has_account = False
 
+            try:
+                self.client._handle_ongoing_api_backoff("DMV_HOOK")
+            except DiscordTooManyRequestsError:
+                timeout = True
+
             return render_to_string(
                 self.service_ctrl_template,
                 {
                     'server_name': MultiDiscordUser.objects.server_name(self.guild_id),
                     "guild_id": self.guild_id,
                     'user_has_account': user_has_account,
-                    'discord_username': discord_username
+                    'discord_username': discord_username,
+                    'timeout': timeout
                 },
                 request=request
             )
