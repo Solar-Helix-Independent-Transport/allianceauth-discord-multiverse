@@ -1,7 +1,9 @@
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from aadiscordbot.utils.auth import get_auth_user
 from celery import chain, shared_task
+from discord.ext.commands.help import Paginator
 from requests.exceptions import HTTPError
 
 from django.contrib.auth.models import User
@@ -10,9 +12,11 @@ from django.db.models.query import QuerySet
 from allianceauth.services.tasks import QueueOnce
 
 from .app_settings import DISCORD_TASKS_MAX_RETRIES, DISCORD_TASKS_RETRY_PAUSE
-from .discord_client import DiscordApiBackoff
+from .discord_client.exceptions import DiscordApiBackoff
 from .models import DiscordManagedServer, MultiDiscordUser
-from .utils import LoggerAddTag
+
+if TYPE_CHECKING:
+    from discord import Bot
 
 logger = logging.getLogger(__name__)
 
@@ -393,3 +397,53 @@ def check_all_users_in_guild(guild_id: int):
                     du.guild.guild_id,
                     du.user.pk
                 )
+
+
+
+async def orphans_task(bot: "Bot", ocid: int):
+    """
+    Returns a list of users on this server, who are not known to AA
+    """
+    from discord.ext.commands import Paginator
+
+    guild_ids = list(
+        DiscordManagedServer.objects.all().values_list(
+            "guild_id",
+            flat=True
+        )
+    )
+    for guild in bot.guilds:
+        payload: Paginator = Paginator(prefix="", suffix="")
+        payload.add_line(f"The following Users cannot be located in Alliance Auth for {guild.name}")
+
+        if guild.id not in guild_ids:
+            continue
+        member_list = guild.members
+        for member in member_list:
+            id = member.id
+            try:
+                discord_exists = get_auth_user(id)
+            except Exception:
+                discord_exists = False
+
+            try:
+                discord_is_bot = member.bot
+            except Exception:
+                discord_is_bot = False
+
+            if discord_exists is not False:
+                # nothing to do, the user exists. Move on with ur life dude.
+                continue
+
+            elif discord_is_bot is True:
+                # lets also ignore bots here
+                pass
+            else:
+                payload.add_line(member.mention)
+
+        try:
+            channel = bot.get_channel(ocid)
+            for _str in payload.pages:
+                await channel.send(_str)
+        except Exception:
+            logger.exception(payload.pages)

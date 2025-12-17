@@ -12,9 +12,7 @@ from allianceauth import hooks
 from allianceauth.services.hooks import ServicesHook, UrlHook
 
 from aadiscordmultiverse.discord_client.client import DiscordClient
-from aadiscordmultiverse.discord_client.exceptions import (
-    DiscordTooManyRequestsError,
-)
+from aadiscordmultiverse.discord_client.exceptions import DiscordApiBackoff
 
 from . import tasks, urls
 from .models import DiscordManagedServer, MultiDiscordUser, ServerActiveFilter
@@ -75,7 +73,7 @@ class MultiDiscordService(ServicesHook):
 
             try:
                 self.client._handle_ongoing_api_backoff("DMV_HOOK")
-            except DiscordTooManyRequestsError:
+            except DiscordApiBackoff:
                 timeout = True
 
             return render_to_string(

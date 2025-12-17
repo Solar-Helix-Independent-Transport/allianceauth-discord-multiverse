@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from allianceauth.services.views import superuser_test
 
+from .discord_client.exceptions import DiscordApiBackoff
 from .models import DiscordManagedServer, MultiDiscordUser
 
 logger = logging.getLogger(__name__)
@@ -120,36 +121,44 @@ def discord_callback(request):
                 )
             )
             return redirect("services:services")
+        try:
+            if MultiDiscordUser.objects.add_user(
+                user=request.user,
+                authorization_code=authorization_code,
+                is_rate_limited=False,
+                guild=guild
+            ):
+                logger.info(
+                    "Successfully activated Discord account for user %s", request.user
+                )
+                success = True
 
-        if MultiDiscordUser.objects.add_user(
-            user=request.user,
-            authorization_code=authorization_code,
-            is_rate_limited=False,
-            guild=guild
-        ):
-            logger.info(
-                "Successfully activated Discord account for user %s", request.user
+            else:
+                logger.error(
+                    "Failed to activate Discord account for user %s", request.user
+                )
+                success = False
+                if success:
+                    messages.success(
+                        request, _('Your Discord account has been successfully activated.')
+                    )
+                else:
+                    messages.error(
+                        request,
+                        _(
+                            'An error occurred while trying to activate your Discord account. '
+                            'Please try again.'
+                        )
+                    )
+        except DiscordApiBackoff:
+            messages.error(
+                request,
+                _(
+                    'Discord API is being rate limited.'
+                    'Please try again in 10 minutes.'
+                )
             )
-            success = True
 
-        else:
-            logger.error(
-                "Failed to activate Discord account for user %s", request.user
-            )
-            success = False
-
-    if success:
-        messages.success(
-            request, _('Your Discord account has been successfully activated.')
-        )
-    else:
-        messages.error(
-            request,
-            _(
-                'An error occurred while trying to activate your Discord account. '
-                'Please try again.'
-            )
-        )
 
     return redirect("services:services")
 
