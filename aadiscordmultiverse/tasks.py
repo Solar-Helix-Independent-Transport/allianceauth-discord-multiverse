@@ -1,9 +1,8 @@
 import logging
+from logging import Logger
 from typing import TYPE_CHECKING, Any
 
-from aadiscordbot.utils.auth import get_auth_user
 from celery import chain, shared_task
-from discord.ext.commands.help import Paginator
 from requests.exceptions import HTTPError
 
 from django.contrib.auth.models import User
@@ -18,7 +17,7 @@ from .models import DiscordManagedServer, MultiDiscordUser
 if TYPE_CHECKING:
     from discord import Bot
 
-logger = logging.getLogger(__name__)
+logger: Logger = logging.getLogger(__name__)
 
 # task priority of bulk tasks
 BULK_TASK_PRIORITY = 6
@@ -404,6 +403,7 @@ async def orphans_task(bot: "Bot", ocid: int):
     """
     Returns a list of users on this server, who are not known to AA
     """
+    from aadiscordbot.utils.auth import get_auth_user
     from discord.ext.commands import Paginator
 
     guild_ids = list(
