@@ -9,16 +9,20 @@ import requests
 from django_redis import get_redis_connection
 from redis import Redis
 
+from django.utils import timezone
+
 from allianceauth import __title__ as AUTH_TITLE, __url__, __version__
 
 from .app_settings import (
     DISCORD_API_BASE_URL, DISCORD_API_TIMEOUT_CONNECT,
-    DISCORD_API_TIMEOUT_READ, DISCORD_DISABLE_ROLE_CREATION,
-    DISCORD_GUILD_NAME_CACHE_MAX_AGE, DISCORD_OAUTH_BASE_URL,
-    DISCORD_OAUTH_TOKEN_URL, DISCORD_ROLES_CACHE_MAX_AGE,
+    DISCORD_API_TIMEOUT_READ, DISCORD_DEBUG_LOGGING,
+    DISCORD_DISABLE_ROLE_CREATION, DISCORD_GUILD_NAME_CACHE_MAX_AGE,
+    DISCORD_OAUTH_BASE_URL, DISCORD_OAUTH_TOKEN_URL,
+    DISCORD_ROLES_CACHE_MAX_AGE,
 )
 from .exceptions import DiscordRateLimitExhausted, DiscordTooManyRequestsError
 from .helpers import DiscordRoles
+from .rate_limiting import RateLimits
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +163,10 @@ class DiscordClient:
         """returns the user belonging to the current access_token"""
         authorization = f'Bearer {self.access_token}'
         r = self._api_request(
-            method='get', route='users/@me', authorization=authorization
+            method='get',
+            route='users/@me',
+            authorization=authorization,
+            bucket="GET users/@me"
         )
         return r.json()
 
@@ -168,7 +175,10 @@ class DiscordClient:
     def guild_infos(self, guild_id: int) -> dict:
         """Returns all basic infos about this guild"""
         route = f"guilds/{guild_id}"
-        r = self._api_request(method='get', route=route)
+        r = self._api_request(
+            method='get',
+            route=route,
+            bucket="GET guilds/{guild_id}")
         return r.json()
 
     def guild_name(self, guild_id: int, use_cache: bool = True) -> str:
@@ -223,7 +233,11 @@ class DiscordClient:
                 logger.debug('No roles for guild %s in cache', guild_id)
 
         route = f"guilds/{guild_id}/roles"
-        r = self._api_request(method='get', route=route)
+        r = self._api_request(
+            method='get',
+            route=route,
+            bucket="GET guilds/{guild_id}/roles"
+        )
         roles = r.json()
         if roles and isinstance(roles, list):
             self._redis.set(
@@ -246,7 +260,12 @@ class DiscordClient:
         route = f"guilds/{guild_id}/roles"
         data = {'name': DiscordRoles.sanitize_role_name(role_name)}
         data.update(kwargs)
-        r = self._api_request(method='post', route=route, data=data)
+        r = self._api_request(
+            method='post',
+            route=route,
+            data=data,
+            bucket="POST guilds/{guild_id}/roles"
+        )
         role = r.json()
         if role:
             self._invalidate_guild_roles_cache(guild_id)
@@ -255,7 +274,11 @@ class DiscordClient:
     def delete_guild_role(self, guild_id: int, role_id: int) -> bool:
         """Deletes a guild role"""
         route = f"guilds/{guild_id}/roles/{role_id}"
-        r = self._api_request(method='delete', route=route)
+        r = self._api_request(
+            method='delete',
+            route=route,
+            bucket="DELETE guilds/{guild_id}/roles/{role_id}"
+        )
         if r.status_code == 204:
             self._invalidate_guild_roles_cache(guild_id)
             return True
@@ -368,7 +391,12 @@ class DiscordClient:
         if nick:
             data['nick'] = str(nick)[:self._NICK_MAX_CHARS]
 
-        r = self._api_request(method='put', route=route, data=data)
+        r = self._api_request(
+            method='put',
+            route=route,
+            data=data,
+            bucket="PUT guilds/{guild_id}/members/{user_id}"
+        )
         r.raise_for_status()
         if r.status_code == 201:
             return True
@@ -383,8 +411,12 @@ class DiscordClient:
         or None if the user is not a member of the guild
         """
         route = f'guilds/{guild_id}/members/{user_id}'
-        r = self._api_request(method='get', route=route,
-                              raise_for_status=False)
+        r = self._api_request(
+            method='get',
+            route=route,
+            raise_for_status=False,
+            bucket='GET guilds/{guild_id}/members/{user_id}'
+        )
         if self._is_member_unknown_error(r):
             logger.warning(
                 "Discord user ID %s could not be found on server.", user_id)
@@ -418,7 +450,11 @@ class DiscordClient:
 
         route = f"guilds/{guild_id}/members/{user_id}"
         r = self._api_request(
-            method='patch', route=route, data=data, raise_for_status=False
+            method='patch',
+            route=route,
+            data=data,
+            raise_for_status=False,
+            bucket="PATCH guilds/{guild_id}/members/{user_id}"
         )
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
@@ -441,7 +477,10 @@ class DiscordClient:
         """
         route = f"guilds/{guild_id}/members/{user_id}"
         r = self._api_request(
-            method='delete', route=route, raise_for_status=False
+            method='delete',
+            route=route,
+            raise_for_status=False,
+            bucket="DELETE guilds/{guild_id}/members/{user_id}"
         )
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
@@ -467,8 +506,12 @@ class DiscordClient:
         - False otherwise
         """
         route = f"guilds/{guild_id}/members/{user_id}/roles/{role_id}"
-        r = self._api_request(method='put', route=route,
-                              raise_for_status=False)
+        r = self._api_request(
+            method='put',
+            route=route,
+            raise_for_status=False,
+            bucket="PUT guilds/{guild_id}/members/{user_id}/roles/{role_id}"
+        )
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
             return None
@@ -491,8 +534,12 @@ class DiscordClient:
         - False otherwise
         """
         route = f"guilds/{guild_id}/members/{user_id}/roles/{role_id}"
-        r = self._api_request(method='delete', route=route,
-                              raise_for_status=False)
+        r = self._api_request(
+            method='delete',
+            route=route,
+            raise_for_status=False,
+            bucket="DELETE guilds/{guild_id}/members/{user_id}/roles/{role_id}"
+        )
         if self._is_member_unknown_error(r):
             logger.warning('User ID %s is not a member of this guild', user_id)
             return None
@@ -524,7 +571,8 @@ class DiscordClient:
         route: str,
         data: dict = None,
         authorization: str = None,
-        raise_for_status: bool = True
+        raise_for_status: bool = True,
+        bucket: str = "Default"
     ) -> requests.Response:
         """Core method for performing all API calls"""
         uid = uuid1().hex
@@ -535,9 +583,9 @@ class DiscordClient:
         if not authorization:
             authorization = f'Bot {self.access_token}'
 
-        self._handle_ongoing_api_backoff(uid)
+        # self._handle_ongoing_api_backoff(uid)
         if self.is_rate_limited:
-            self._ensure_rate_limed_not_exhausted(uid)
+            RateLimits.check_bucket(bucket)
         headers = {
             'User-Agent': f'{AUTH_TITLE} ({__url__}, {__version__})',
             'accept': 'application/json',
@@ -578,7 +626,7 @@ class DiscordClient:
         if r.status_code == self._HTTP_STATUS_CODE_RATE_LIMITED:
             self._handle_new_api_backoff(r, uid)
 
-        self._report_rate_limit_from_api(r, uid)
+        self._report_rate_limit_from_api(r, uid, bucket)
 
         if raise_for_status:
             r.raise_for_status()
@@ -680,10 +728,10 @@ class DiscordClient:
         )
         raise DiscordTooManyRequestsError(retry_after=retry_after)
 
-    def _report_rate_limit_from_api(self, r, uid):
+    def _report_rate_limit_from_api(self, r, uid, bucket):
         """Tries to log the current rate limit reported from API"""
         if (
-            logger.getEffectiveLevel() <= logging.DEBUG
+            DISCORD_DEBUG_LOGGING
             and 'x-ratelimit-limit' in r.headers
             and 'x-ratelimit-remaining' in r.headers
             and 'x-ratelimit-reset-after' in r.headers
@@ -691,17 +739,29 @@ class DiscordClient:
             try:
                 limit = int(r.headers['x-ratelimit-limit'])
                 remaining = int(r.headers['x-ratelimit-remaining'])
-                reset_after = float(
-                    r.headers['x-ratelimit-reset-after']) * 1000
-                if remaining + 1 == limit:
-                    logger.debug(
-                        '%s: Rate limit reported from API: %d requests per %s ms',
-                        uid,
-                        limit,
-                        reset_after
-                    )
-            except ValueError:
-                pass
+                reset_after = float(r.headers['x-ratelimit-reset']) - timezone.now().timestamp()
+                window = float(r.headers['x-ratelimit-reset-after'])
+                bucket_header = r.headers.get("x-ratelimit-bucket", "Unknown")
+                logger.info(
+                    '%s: Rate limit reported from API: %d requests per %s ms (%s)[%s] %s (%s)',
+                    uid,
+                    limit,
+                    window,
+                    bucket,
+                    r.request.method,
+                    r.request.url,
+                    bucket_header
+                )
+                RateLimits.update_slug_bucket(
+                    bucket,
+                    limit,
+                    window,
+                    bucket_header,
+                    remaining,
+                    reset_after
+                )
+            except ValueError as e:
+                logger.error(e)
 
     @staticmethod
     def _redis_decode(value: str) -> str:

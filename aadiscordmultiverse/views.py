@@ -25,11 +25,15 @@ def deactivate_discord(request, guild_id):
         discord_user = MultiDiscordUser.objects.get(
             guild_id=guild_id, user=request.user)
         if discord_user.delete_user(
-            is_rate_limited=False, handle_api_exceptions=True
+            handle_api_exceptions=True
         ):
             logger.info(
                 "Successfully deactivated discord for user %s", request.user)
             messages.success(request, _('Deactivated Discord account.'))
+        else:
+            logger.error(
+                "Unable to deactivated discord for user %s", request.user)
+            messages.error(request, _('Unable to deactivated Discord account.'))
 
     except Exception as e:
         logger.exception(e, exc_info=True)
@@ -52,14 +56,20 @@ def reset_discord(request, guild_id):
         discord_user = MultiDiscordUser.objects.get(
             guild_id=guild_id, user=request.user)
         if discord_user.delete_user(
-            is_rate_limited=False, handle_api_exceptions=True
+            handle_api_exceptions=True
         ):
             logger.info(
-                "Successfully deleted discord user for user %s - "
-                "forwarding to discord activation.",
+                ("Successfully deleted discord user for user %s - "
+                "forwarding to discord activation."),
                 request.user
             )
-            return redirect("dmv:activate", guild_id=guild_id)
+            return redirect(to="dmv:activate", guild_id=guild_id)
+        else:
+            logger.error(
+                "Unable to reset discord for user %s", request.user)
+            messages.error(request, _('Unable to reset Discord account.'))
+            return redirect(to="services:services")
+
     except Exception as e:
         logger.exception(e, exc_info=True)
 
@@ -125,7 +135,6 @@ def discord_callback(request):
             if MultiDiscordUser.objects.add_user(
                 user=request.user,
                 authorization_code=authorization_code,
-                is_rate_limited=False,
                 guild=guild
             ):
                 logger.info(

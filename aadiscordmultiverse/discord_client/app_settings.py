@@ -2,7 +2,7 @@ from allianceauth.services.modules.discord.utils import clean_setting
 
 # Base URL for all API calls. Must end with /.
 DISCORD_API_BASE_URL = clean_setting(
-    'DISCORD_API_BASE_URL', 'https://discord.com/api/'
+    'DISCORD_API_BASE_URL', 'https://discord.com/api/v10'
 )
 
 # Low level connecttimeout for requests to the Discord API in seconds
@@ -41,4 +41,8 @@ DISCORD_ROLES_CACHE_MAX_AGE = clean_setting(
 # and wait out the reset. Rate limit is about 250 per 48 hrs.
 DISCORD_DISABLE_ROLE_CREATION = clean_setting(
     'DISCORD_DISABLE_ROLE_CREATION', False
+)
+
+DISCORD_DEBUG_LOGGING = clean_setting(
+    'DISCORD_DEBUG_LOGGING', True
 )

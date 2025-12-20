@@ -9,7 +9,7 @@ class DiscordApiBackoff(DiscordClientException):
     """Exception signaling we need to backoff from sending requests to the API for now
     """
 
-    def __init__(self, retry_after: int):
+    def __init__(self, retry_after: int, bucket: str = ""):
         """
         :param retry_after: int time to retry after in milliseconds
         """
