@@ -2,30 +2,21 @@
 
 Service module for managing an unlimited number of discord servers from a single auth instance. It can run side by side with the core auth discord service, or completely standalone.
 
-Most of the code is borrowed from Alliance Auth's core Discord Service Module[link] and re-purposed to be guild agnostic.
+Most of the code is borrowed from Alliance Auth's core [Discord Service Module](https://allianceauth.readthedocs.io/en/latest/features/services/discord.html) and re-purposed to be guild agnostic.
 
 Active Devs:
 
 - [AaronKable](https://github.com/pvyParts)
 
-MID PRIO:
-
-- TODO: Check the performance with massive servers/counts...
-- TODO: ensure no cache conflicts
-- TODO: Instructions and documentation
-- TODO: Maybe custom client/secrets at a server level?
-
-HIGH PRIO!
-
-- TODO: Check AuthBot to see what it does.
-
 ### Installation
 
 1.  pip install `package`
 2.  Add `'aadiscordmultiverse',` to your `INSTALLED_APPS` in your projects `local.py`
-    #TODO add redirect to sso app
-    #TODO add settings for redirect or make it auto
-    #TODO add the other step...
+3.  Add a new redirect in the [discord app SSO](https://allianceauth.readthedocs.io/en/latest/features/services/discord.html#registering-an-application)
+ * the url needed is `https://yourauth.url/dmv/callback`
+ * if you are using this along side the inbuilt module just add another url
+4.  Add redirect url to your local.py
+ * `DMV_CALLBACK_URL = f"{SITE_URL}/dmv/callback/"`
 3.  Run migrations, collectstatic and restart auth.
 4.  Setup your permissions as documented below
 
@@ -51,5 +42,5 @@ HIGH PRIO!
 5.  Click Save
 6.  Restart Auth
 7.  Goto Services in the main auth site
-8.  Click "Link Discord" on the new server and add your auth bot to the correct server.
+8.  Click "Link Discord" on the new server and add your auth to the correct server.
 9.  People can now join as required
