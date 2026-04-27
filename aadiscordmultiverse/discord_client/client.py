@@ -583,7 +583,7 @@ class DiscordClient:
         if not authorization:
             authorization = f'Bot {self.access_token}'
 
-        # self._handle_ongoing_api_backoff(uid)
+        self._handle_ongoing_api_backoff(uid)
         if self.is_rate_limited:
             RateLimits.check_bucket(bucket)
         headers = {
@@ -742,16 +742,17 @@ class DiscordClient:
                 reset_after = float(r.headers['x-ratelimit-reset']) - timezone.now().timestamp()
                 window = float(r.headers['x-ratelimit-reset-after'])
                 bucket_header = r.headers.get("x-ratelimit-bucket", "Unknown")
-                logger.info(
-                    '%s: Rate limit reported from API: %d requests per %s ms (%s)[%s] %s (%s)',
-                    uid,
-                    limit,
-                    window,
-                    bucket,
-                    r.request.method,
-                    r.request.url,
-                    bucket_header
-                )
+                if DISCORD_DEBUG_LOGGING:
+                    logger.info(
+                        '%s: Rate limit reported from API: %d requests per %s ms (%s)[%s] %s (%s)',
+                        uid,
+                        limit,
+                        window*1000,
+                        bucket,
+                        r.request.method,
+                        r.request.url,
+                        bucket_header
+                    )
                 RateLimits.update_slug_bucket(
                     bucket,
                     limit,

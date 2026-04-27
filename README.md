@@ -8,10 +8,6 @@ Active Devs:
 
 - [AaronKable](https://github.com/pvyParts)
 
-```diff
--                 THIS APPLICATION IS NOT PRODUCTION READY
-```
-
 MID PRIO:
 
 - TODO: Check the performance with massive servers/counts...

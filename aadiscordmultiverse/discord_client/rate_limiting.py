@@ -1,5 +1,4 @@
 import logging
-import time
 
 from django.core.cache import cache
 from django.utils.text import slugify
@@ -8,17 +7,8 @@ from .exceptions import DiscordRateLimitExhausted
 
 logger = logging.getLogger(__name__)
 
-seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-
-
-def interval_to_seconds(s):
-    return int(s[:-1]) * seconds_per_unit[s[-1]]
-
 
 class RateLimitBucket:
-    PUT_USER = ("PUT guilds/{guild_id}/members/{user_id}", 10, 10)
-    DELETE_USER = ("DELETE guilds/{guild_id}/members/{user_id}", 5, 1)
-
     BUCKET_HASH = False
 
     def __init__(self, slug: str, limit: int, window: int):
@@ -138,16 +128,5 @@ class RateLimiter:
             if timeout > 0:
                 raise DiscordRateLimitExhausted(bucket, timeout, bucket=bucket.slug)
             return
-
-    def check_decr_bucket(self, slug: str, raise_on_limit: bool = True):
-        try:
-            self.check_bucket(slug)
-            logger.info(f"RATES: {slug} DC: {self.decr_bucket(slug)}")
-        except DiscordRateLimitExhausted as ex:
-            if raise_on_limit:
-                raise ex
-            else:
-                time.sleep(ex.reset)
-
 
 RateLimits = RateLimiter()
