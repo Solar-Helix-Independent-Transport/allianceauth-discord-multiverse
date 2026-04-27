@@ -101,13 +101,14 @@ class MultiDiscordService(ServicesHook):
         logger.debug(f"Syncing {user} nicknames on  {self.guild_id}")
 
         if self.user_has_account(user):
+            guild = DiscordManagedServer.objects.get(guild_id=self.guild_id)
             tasks.update_nickname.apply_async(
                 kwargs={
                     'guild_id': self.guild_id,
                     'user_pk': user.pk,
                     # since the new nickname is not yet in the DB we need to
                     # provide it manually to the task
-                    'nickname': MultiDiscordUser.objects.user_formatted_nick(user)
+                    'nickname': MultiDiscordUser.objects.user_formatted_nick(user, guild)
                 },
                 priority=SINGLE_TASK_PRIORITY
             )
