@@ -41,7 +41,7 @@ dynamic = [
     "version",
 ]
 dependencies = [
-    "allianceauth<5,>=3",
+    "allianceauth>=3",
 ]
 optional-dependencies.test = [
     "allianceauth-securegroups",

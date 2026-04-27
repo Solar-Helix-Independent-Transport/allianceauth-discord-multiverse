@@ -155,8 +155,6 @@ class MultiDiscordUserManager(models.Manager):
         Returns: True on success, else False or raises exception
         """
         try:
-            # TODO pull the guild config and confirm perms and settings
-
             if guild.sync_names:
                 nickname = self.user_formatted_nick(user, guild)
             else:
@@ -174,6 +172,9 @@ class MultiDiscordUserManager(models.Manager):
             discord_user = user_client.current_user()
             user_id = discord_user['id']
             bot_client = self._bot_client(is_rate_limited=is_rate_limited)
+
+            if not guild.user_can_access_guild(user, guild):
+                return False
 
             if group_names:
                 role_ids = match_or_create_roles_from_names(
