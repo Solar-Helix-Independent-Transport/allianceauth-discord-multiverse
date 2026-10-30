@@ -6,9 +6,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('eveonline', '0017_alliance_and_corp_names_are_not_unique'),
+        ('eveonline', '0019_v5squash'),
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('authentication', '0020_userprofile_language_userprofile_night_mode'),
+        ('authentication', '0025_v5squash'),
         ('aadiscordmultiverse', '0001_initial'),
     ]
 
